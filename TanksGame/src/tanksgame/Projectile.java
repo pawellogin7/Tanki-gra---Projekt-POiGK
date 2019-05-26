@@ -22,7 +22,7 @@ public class Projectile {
     
     public void update(){
         x += -speedX + bg.getSpeedX();
-        y += -speedY + bg.getSpeedY();
+        y += -speedY - bg.getSpeedY();
         distanceX += speedX;
         distanceY += speedY;
         int distance = (int) Math.round(Math.sqrt(distanceX*distanceX + distanceY*distanceY));
