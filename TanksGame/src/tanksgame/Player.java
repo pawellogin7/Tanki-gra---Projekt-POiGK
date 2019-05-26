@@ -82,12 +82,12 @@ public class Player {
         }
         
         public void stopUp() {
-            setMovingRight(false);
+            setMovingUp(false);
             stop();
         }
 
         public void stopDown() {
-            setMovingLeft(false);
+            setMovingDown(false);
             stop();
         }
         

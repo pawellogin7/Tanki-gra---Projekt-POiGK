@@ -12,6 +12,7 @@ public class Background {
     
     public void update() {
         bgX += speedX;
+        bgY -= speedY;
 
         if (bgX <= -2160){
             bgX += 4320;
