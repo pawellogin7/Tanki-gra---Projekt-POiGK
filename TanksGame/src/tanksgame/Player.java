@@ -8,8 +8,8 @@ import java.util.ArrayList;
  */
 public class Player {
         //In Java, Class Variables should be private so that only its methods can change them.
-	private int centerX = 200;
-	private int centerY = 200;
+	private int centerX = 700;
+	private int centerY = 500;
 	private int speedX = 0;
 	private int speedY = 0;
         
@@ -45,8 +45,8 @@ public class Player {
 	}
 
         public void shoot(double mouseX, double mouseY) {
-            int gunX = centerX + 50;
-            int gunY = centerY - 25;
+            int gunX = centerX + 53;
+            int gunY = centerY - 1;
             double deltaX = gunX - mouseX;
             double deltaY = gunY - mouseY;
             double angle = Math.atan2(deltaY, deltaX);
