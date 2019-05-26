@@ -56,19 +56,19 @@ public class Player {
         }
         
 	public void moveRight() {
-		speedX = -6;
+		speedX = -3;
 	}
 
 	public void moveLeft() {
-		speedX = 6;
+		speedX = 3;
 	}
         
         public void moveUp() {
-		speedY = -6;
+		speedY = -3;
 	}
         
         public void moveDown() {
-		speedY = 6;
+		speedY = 3;
 	}
 
         public void stopRight() {

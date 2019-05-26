@@ -2,25 +2,30 @@ package tanksgame;
 
 
 public class Projectile {
-    private int x, y, speedX, speedY, range, velocity;
+    private int x, y, speedX, speedY, range, distanceX, distanceY, velocity;
     boolean visible;
+    private Background bg = TanksGame.getBg1();
     
     public Projectile(int startX, int startY, double angle){
         x = startX;
         y = startY;
-        velocity = 7;
+        velocity = 8;
         
         speedX = (int) Math.round( velocity * Math.cos(angle) );
         speedY = (int) Math.round( velocity * Math.sin(angle) );
-     
+        
         visible = true;
-        range = 1000;
+        distanceX = 0;
+        distanceY = 0;
+        range = 700;
     }
     
     public void update(){
-        x -= speedX;
-        y -= speedY;
-        int distance = (int) Math.round(Math.sqrt(x*x + y*y));
+        x += -speedX + bg.getSpeedX();
+        y += -speedY + bg.getSpeedY();
+        distanceX += speedX;
+        distanceY += speedY;
+        int distance = (int) Math.round(Math.sqrt(distanceX*distanceX + distanceY*distanceY));
         if (distance > range) {
             visible = false;
         }
