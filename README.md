@@ -1,1 +1,1 @@
-Do zrobienia:
+Do zrobienia: 
