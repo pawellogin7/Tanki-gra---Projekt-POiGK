@@ -3,10 +3,9 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Paweł/Documents/NetBeansProjects/TanksGame/src/tanksgame/Projectile.java</file>
-            <file>file:/C:/Users/Paweł/Documents/NetBeansProjects/TanksGame/src/tanksgame/TanksGame.java</file>
-            <file>file:/C:/Users/Paweł/Documents/NetBeansProjects/TanksGame/src/tanksgame/Player.java</file>
-            <file>file:/C:/Users/Paweł/Documents/NetBeansProjects/TanksGame/src/tanksgame/Enemy.java</file>
+            <file>file:/C:/Users/student/Documents/Tanki-gra---Projekt-POiGK-master/TanksGame/src/tanksgame/Player.java</file>
+            <file>file:/C:/Users/student/Documents/Tanki-gra---Projekt-POiGK-master/TanksGame/src/tanksgame/Weapon.java</file>
+            <file>file:/C:/Users/student/Documents/Tanki-gra---Projekt-POiGK-master/TanksGame/src/tanksgame/Projectile.java</file>
         </group>
     </open-files>
 </project-private>

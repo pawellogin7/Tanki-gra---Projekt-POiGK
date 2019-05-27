@@ -2,7 +2,7 @@ package tanksgame;
 
 
 public class Projectile {
-    private int x, y, speedX, speedY, range, distanceX, distanceY, velocity;
+    private int x, y, speedX, speedY, distanceX, distanceY, velocity, damage, armor_pen, range;
     boolean visible;
     private Background bg = TanksGame.getBg1();
     
