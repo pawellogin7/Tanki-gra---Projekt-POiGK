@@ -8,8 +8,8 @@ public class Enemy {
    public void update() {
     centerX += speedX;
     speedX = bg.getSpeedX();
-    centerY -= speedY;
-    speedY = bg.getSpeedY();
+    centerY += speedY;
+    speedY = -bg.getSpeedY();
    }
 
    public void die() {
