@@ -21,9 +21,9 @@ public class Player {
         private static Background bg1 = TanksGame.getBg1();                 
         private static Background bg2 = TanksGame.getBg2();
         private ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
+        private Weapon weapon = new Weapon(1, 1, 1, 1, 1, 1, 0);
         
 	public void update() {
-
 		// Moves Character or Scrolls Background accordingly.
                 if (speedX == 0) {
                     bg1.setSpeedX(0);
@@ -41,34 +41,43 @@ public class Player {
                 else {
                     bg1.setSpeedY(speedY);
                     bg2.setSpeedY(speedY);
-                }                
+                }
+                weapon.update();
 	}
 
         public void shoot(double mouseX, double mouseY) {
-            int gunX = centerX + 53;
-            int gunY = centerY - 1;
-            double deltaX = gunX - mouseX;
-            double deltaY = gunY - mouseY;
-            double angle = Math.atan2(deltaY, deltaX);
-                       
-            Projectile p = new Projectile(gunX, gunY, angle);
-            projectiles.add(p);
+            if(weapon.getCooldown() == 0)
+            {
+                int gunX = centerX + 53;
+                int gunY = centerY - 9;
+                double deltaX = gunX - mouseX;
+                double deltaY = gunY - mouseY;
+                
+                if(weapon.getBullet_number() == 0) {
+                }
+                else if(weapon.getBullet_number() == 1)
+                     projectiles.add(weapon.getProjectile(gunX, gunY, deltaX, deltaY));
+                else {
+                    for(int i = 1; i <= weapon.getBullet_number(); i++)
+                        projectiles.add(weapon.getProjectileShotgun(gunX, gunY, deltaX, deltaY, i));
+                }
+            }
         }
         
 	public void moveRight() {
-		speedX = -3;
+		speedX = -5;
 	}
 
 	public void moveLeft() {
-		speedX = 3;
+		speedX = 5;
 	}
         
         public void moveUp() {
-		speedY = -3;
+		speedY = -5;
 	}
         
         public void moveDown() {
-		speedY = 3;
+		speedY = 5;
 	}
 
         public void stopRight() {
@@ -187,5 +196,15 @@ public class Player {
     public ArrayList getProjectiles() {
 	return projectiles;
     } 
-        
+
+    public Weapon getWeapon() {
+        return weapon;
+    }
+
+    public void setWeapon(Weapon playerWeapon) {
+        this.weapon = playerWeapon;
+    }
+    
+    
+    
 } 

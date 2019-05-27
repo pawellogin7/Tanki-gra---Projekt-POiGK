@@ -3,13 +3,15 @@ package tanksgame;
 
 public class Projectile {
     private int x, y, speedX, speedY, distanceX, distanceY, velocity, damage, armor_pen, range;
-    boolean visible;
+    private boolean visible;
+    private int projectileType;
     private Background bg = TanksGame.getBg1();
     
-    public Projectile(int startX, int startY, double angle){
+    public Projectile(int startX, int startY, double angle, int vel, int rng, int dmg, int a_pen, int p_type){
         x = startX;
         y = startY;
-        velocity = 8;
+        velocity = vel;
+        range = rng;
         
         speedX = (int) Math.round( velocity * Math.cos(angle) );
         speedY = (int) Math.round( velocity * Math.sin(angle) );
@@ -17,7 +19,7 @@ public class Projectile {
         visible = true;
         distanceX = 0;
         distanceY = 0;
-        range = 700;
+        projectileType = p_type;
     }
     
     public void update(){
@@ -70,7 +72,21 @@ public class Projectile {
     public void setVisible(boolean visible) {
         this.visible = visible;
     }
-    
-    
-    
+
+    public int getArmor_pen() {
+        return armor_pen;
+    }
+
+    public void setArmor_pen(int armor_pen) {
+        this.armor_pen = armor_pen;
+    }
+
+    public int getProjectileType() {
+        return projectileType;
+    }
+
+    public void setProjectileType(int projectileType) {
+        this.projectileType = projectileType;
+    }
+     
 }

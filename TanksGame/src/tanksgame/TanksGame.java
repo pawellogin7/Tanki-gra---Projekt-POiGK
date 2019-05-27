@@ -21,7 +21,8 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
 
     private Player player;
     private EnemyTank t1, t2;
-    private Image image, character, background, cursor, enemyTank;
+    private Weapon machineGun, shotGun, sniperGun, doubleGun, flameGun, laserGun;
+    private Image image, character, background, cursor, enemyTank, playerBullet, projectileFire, projectileLaser;
     private Graphics second;
     private URL base;
     private static Background bg1, bg2;
@@ -56,6 +57,20 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         background = getImage(base, "../data/background.png");
         cursor = getImage(base, "../data/cursor.png");
         enemyTank = getImage(base, "../data/enemyTank.png");
+        playerBullet = getImage(base, "../data/playerBullet.png");
+        projectileFire = getImage(base, "../data/projectileFire.png");
+        projectileLaser = getImage(base, "../data/projectileLaser.png");
+        
+        // Weapon creation
+        machineGun = new Weapon(50, 0.1, 85, 5, 800, 12, 1);
+        shotGun = new Weapon(15, 0.7, 70, 5, 600, 10, 7);
+        sniperGun = new Weapon(200, 1, 95, 50, 1200, 18, 1);
+        doubleGun = new Weapon(70, 0.15, 90, 10, 350, 20, 2);
+        flameGun = new Weapon(10, 0.1, 30, 5, 200, 20, 16);
+        flameGun.setProjectileType(3);
+        laserGun = new Weapon(10, 0.017, 100, 50, 800, 15, 1);
+        laserGun.setProjectileType(2);
+        
     }
 
     @Override
@@ -64,6 +79,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         bg2 = new Background(2160, 0); 
         
         player = new Player();
+        player.setWeapon(machineGun);
         t1 = new EnemyTank(340, 360);
         t2 = new EnemyTank(700, 360);
         
@@ -145,14 +161,29 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         ArrayList projectiles = player.getProjectiles();
 	for (int i = 0; i < projectiles.size(); i++) {
             Projectile p = (Projectile) projectiles.get(i);
-            g.setColor(Color.YELLOW);
-            g.fillRect(p.getX() - 3, p.getY() - 3, 6, 6);
+            drawProjectile(p, g);
         }
         //g.setFont(new Font("Arial",Font.BOLD,20));
         //g.drawString("Mouse x: " + mouseX, 5, 140);
-        //g.drawString("Mouse y: "+ mouseY, 5, 170);
-        
-        
+        //g.drawString("Mouse y: "+ mouseY, 5, 170);       
+    }
+    
+    public void drawProjectile(Projectile p, Graphics g) {
+        int typ = p.getProjectileType();
+        switch(typ)
+        {
+            case 0:
+              g.drawImage(playerBullet, p.getX(), p.getY(), this);
+              break;
+            case 1:
+              break;
+            case 2:
+              g.drawImage(projectileLaser, p.getX(), p.getY(), this);
+              break;
+            case 3:
+              g.drawImage(projectileFire, p.getX(), p.getY(), this);
+              break;
+        }
     }
 
     public void keyTyped(KeyEvent e) {
@@ -179,6 +210,30 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
             case KeyEvent.VK_D:
                 player.moveRight();
                 player.setMovingRight(true);
+            break;
+            
+            case KeyEvent.VK_1:
+                player.setWeapon(machineGun);
+            break;
+            
+            case KeyEvent.VK_2:
+                player.setWeapon(shotGun);
+            break;
+            
+            case KeyEvent.VK_3:
+                player.setWeapon(sniperGun);
+            break;
+            
+            case KeyEvent.VK_4:
+                player.setWeapon(doubleGun);
+            break;
+            
+            case KeyEvent.VK_5:
+                player.setWeapon(flameGun);
+            break;
+            
+            case KeyEvent.VK_6:
+                player.setWeapon(laserGun);
             break;
 
             case KeyEvent.VK_SPACE:
