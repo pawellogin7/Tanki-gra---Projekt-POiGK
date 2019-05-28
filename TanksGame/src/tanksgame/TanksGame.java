@@ -20,14 +20,16 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     private Player player;
     private EnemyTank t1, t2;
     private Weapon machineGun, shotGun, sniperGun, doubleGun, flameGun, laserGun;
-    private Ability speedBoost, sprint, reloadBoost;
+    private Weapon slowingShot, paralyzeShot, jamShot, stunShot, armorBreakShot;
+    private Ability speedBoost, sprint, reloadBoost, regenBoost;
     private Image image, character, background, cursor, enemyTank, playerBullet, projectileFire, projectileLaser;
     private Graphics second;
     private URL base;
     private static Background bg1, bg2;
     private int mouseX = 0;
     private int mouseY = 0;
-    boolean mouseDown = false;
+    boolean mouse1Down = false;
+    boolean mouse2Down = false;
     boolean mouseMoving = false;
     private int cusorWidth = 16;
     private int cursorHeight = 16;
@@ -70,6 +72,29 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         laserGun = new Weapon(10, 0.017, 100, 50, 800, 15, 1);
         laserGun.setProjectileType(2);
         
+        //Secondaryweapon creation
+        slowingShot = new Weapon(10, 10, 70, 0, 800, 14, 5);
+        slowingShot.getStatus().setSlowed(true);
+        slowingShot.getStatus().setSlowedDuration(5);
+        
+        paralyzeShot = new Weapon(10, 10, 100, 0, 800, 16, 1);
+        paralyzeShot.getStatus().setParalyzed(true);
+        paralyzeShot.getStatus().setParalyzedDuration(3);
+        
+        jamShot = new Weapon(10, 10, 100, 0, 800, 16, 1);
+        jamShot.getStatus().setWeaponJammed(true);
+        jamShot.getStatus().setWeaponJammedDuration(3);
+        
+        stunShot = new Weapon(10, 10, 100, 0, 800, 16, 1);
+        stunShot.getStatus().setParalyzed(true);
+        stunShot.getStatus().setParalyzedDuration(1.5);
+        stunShot.getStatus().setWeaponJammed(true);
+        stunShot.getStatus().setWeaponJammedDuration(1.5);
+        
+        armorBreakShot = new Weapon(10, 10, 50, 0, 400, 14, 9);
+        armorBreakShot.getStatus().setArmorBroken(true);
+        armorBreakShot.getStatus().setArmorBrokenDuration(5);
+        
         //Ability creation
         speedBoost = new Ability(5, 10);
         speedBoost.getStatus().setSpeedy(true);
@@ -84,6 +109,10 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         reloadBoost = new Ability(5, 10);
         reloadBoost.getStatus().setReloadBoost(true);
         reloadBoost.getStatus().setReloadBoostDuration(reloadBoost.getBaseDuration());
+        
+        regenBoost = new Ability(8, 10);
+        regenBoost.getStatus().setRegenBoost(true);
+        regenBoost.getStatus().setRegenBoostDuration(regenBoost.getBaseDuration());
     }
 
     @Override
@@ -92,8 +121,9 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         bg2 = new Background(2160, 0); 
         
         player = new Player();
-        player.setWeapon(machineGun);
-        player.setAbility(reloadBoost);
+        player.setPrimaryWeapon(machineGun);
+        player.setSecondaryWeapon(armorBreakShot);
+        player.setAbility(regenBoost);
         t1 = new EnemyTank(340, 360);
         t2 = new EnemyTank(700, 360);
         
@@ -128,8 +158,11 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
 		}
             }
             
-            if(mouseDown)
-                player.shoot(mouseX + cusorWidth / 2, mouseY + cursorHeight / 2);
+            if(mouse1Down)
+                player.shootPrimary(mouseX + cusorWidth / 2, mouseY + cursorHeight / 2);
+            
+            if(mouse2Down)
+                player.shootSecondary(mouseX + cusorWidth / 2, mouseY + cursorHeight / 2);
                 
             bg1.update();
             bg2.update();
@@ -173,11 +206,21 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         g.drawImage(enemyTank, t2.getCenterX() - 64, t2.getCenterY() - 32, this);
         g.drawImage(character, player.getCenterX() - 64, player.getCenterY() - 32, this);
         
-        int hudAbilityX = 20;
-        int hudAbilityY = 890;
-        int hudAbilitySize = 2;
-        int abilityPercent = player.getAbility().getPercent();
-        drawHud(hudAbilityX, hudAbilityY, hudAbilitySize, abilityPercent, g);
+        int hudX = 320;
+        int hudY = 890;
+        int hudSize = 2;
+        int percent = player.getAbility().getPercent();
+        drawHud(hudX, hudY, hudSize, percent, g); //ability hud
+        
+        hudX = 380;
+        percent = player.getSecondaryWeapon().getPercent();
+        drawHud(hudX, hudY, hudSize, percent, g); //secondary weapon hud
+        
+        hudX = 440;
+        percent = player.getPrimaryWeapon().getPercent();
+        drawHud(hudX, hudY, hudSize, percent, g); //primary weapon hud
+        
+        drawPlayerHP(500, 908, 400, 20, g);
         
         ArrayList projectiles = player.getProjectiles();
 	for (int i = 0; i < projectiles.size(); i++) {
@@ -250,6 +293,15 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         }
     }
     
+    public void drawPlayerHP(int startX, int startY, int width, int heigth, Graphics g) {
+        g.setColor(Color.black);
+        g.fillRect(startX - 3, startY - 3, width + 6, heigth + 6);
+        g.setColor(Color.red);
+        g.fillRect(startX, startY, width, heigth);
+        g.setColor(Color.green);
+        g.fillRect(startX, startY, width * player.getHpPercent() / 100, heigth);
+    }
+    
     public void keyTyped(KeyEvent e) {
         
     }
@@ -277,27 +329,27 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
             break;
             
             case KeyEvent.VK_1:
-                player.setWeapon(machineGun);
+                player.setPrimaryWeapon(machineGun);
             break;
             
             case KeyEvent.VK_2:
-                player.setWeapon(shotGun);
+                player.setPrimaryWeapon(shotGun);
             break;
             
             case KeyEvent.VK_3:
-                player.setWeapon(sniperGun);
+                player.setPrimaryWeapon(sniperGun);
             break;
             
             case KeyEvent.VK_4:
-                player.setWeapon(doubleGun);
+                player.setPrimaryWeapon(doubleGun);
             break;
             
             case KeyEvent.VK_5:
-                player.setWeapon(flameGun);
+                player.setPrimaryWeapon(flameGun);
             break;
             
             case KeyEvent.VK_6:
-                player.setWeapon(laserGun);
+                player.setPrimaryWeapon(laserGun);
             break;
 
             case KeyEvent.VK_SPACE:
@@ -330,10 +382,20 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     }
     
     public void mousePressed(MouseEvent e) {
-        mouseDown = true;
+        if(e.getButton() == e.BUTTON1) {
+            mouse1Down = true;
+        }
+        else if(e.getButton() == e.BUTTON3) {
+            mouse2Down = true;
+        }
     }
     public void mouseReleased(MouseEvent e) {
-        mouseDown = false;
+        if(e.getButton() == e.BUTTON1) {
+            mouse1Down = false;
+        }
+        else if(e.getButton() == e.BUTTON3) {
+            mouse2Down = false;
+        }
     }
     
     public void mouseEntered(MouseEvent e){
@@ -353,7 +415,12 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     public void mouseDragged(MouseEvent e){
         mouseX = e.getX();
         mouseY = e.getY();
-        mouseDown = true;
+        if(e.getButton() == e.BUTTON1) {
+            mouse1Down = true;
+        }
+        else if(e.getButton() == e.BUTTON3) {
+            mouse2Down = true;
+        }
     }
     
     

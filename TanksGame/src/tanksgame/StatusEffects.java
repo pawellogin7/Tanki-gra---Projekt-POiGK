@@ -21,7 +21,7 @@ public class StatusEffects {
     private double armorBoostDuration = 0;
     
     //HP Regen
-    private boolean regenBoost = false; //increases HP regen by 200%
+    private boolean regenBoost = false; //increases HP regen by 150%
     private double regenBoostDuration = 0;
     private boolean regenReduction = false; //decreases HP regen by 100%
     private double regenReductionDuration = 0;
@@ -536,8 +536,5 @@ public class StatusEffects {
         this.reloadReductionDuration = reloadReductionDuration;
     }
 
-    
-    
-    
-    
+  
 }

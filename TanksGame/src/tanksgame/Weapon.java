@@ -6,8 +6,9 @@ import java.util.Random;
 public class Weapon {
     private int baseDamage, baseAccuracy, baseArmorPen, range, bullet_velocity, bullet_number;
     private int damage, accuracy, armorPen;
-    private double  baseReload, reload;
-    private int cooldown, projectileType;
+    private double  baseReload, reload, cooldown;
+    private int projectileType;
+    private StatusEffects status = new StatusEffects();
     
     Weapon(int dmg, double rld, int acc, int a_pen, int rng, int vel, int num) {
         baseDamage = dmg;
@@ -28,7 +29,7 @@ public class Weapon {
 
     public void update() {
         if(cooldown != 0) {
-            cooldown -= 17;
+            cooldown -= 0.017;
             if(cooldown < 0)
                 cooldown = 0;
         } 
@@ -45,7 +46,7 @@ public class Weapon {
         else
             angle = Math.atan2(deltaY , deltaX) - (1.0 * (100 - accuracy) / 100.0) * losuj * Math.PI / 2;       
      
-        cooldown = (int) (reload * 1000);
+        cooldown = reload;
         Projectile proj = new Projectile(startX, startY, angle, bullet_velocity, range, damage, armorPen, projectileType);
         return proj;
     }
@@ -63,9 +64,16 @@ public class Weapon {
             angle = Math.atan2(deltaY , deltaX) - jump * 1.0 * (proj_id - (bullet_number - 1) / 2 - 1) * 1.0;
         }
         
-        cooldown = (int) (reload * 1000);
+        cooldown = reload;
         Projectile proj = new Projectile(startX, startY, angle, bullet_velocity, range, damage, armorPen, projectileType);
         return proj;
+    }
+    
+    int getPercent() {
+        int percent = 0;
+        percent = (int) Math.floor(1.0 * (reload - cooldown) / reload * 100);
+
+        return percent;
     }
 
     public int getDamage() {
@@ -116,7 +124,7 @@ public class Weapon {
         return baseReload;
     }
 
-    public int getCooldown() {
+    public double getCooldown() {
         return cooldown;
     }
 
@@ -136,5 +144,14 @@ public class Weapon {
     public void setProjectileType(int projectileType) {
         this.projectileType = projectileType;
     }    
+
+    public StatusEffects getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusEffects status) {
+        this.status = status;
+    }
+    
     
 }

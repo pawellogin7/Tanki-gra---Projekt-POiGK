@@ -17,7 +17,7 @@ public class Player {
         private int baseRegen, regen;
         private int baseArmor, armor;
         private int baseSpeed, speed;
-        
+        double regenCooldown;
         
         private boolean movingLeft = false;
         private boolean movingRight = false;
@@ -27,31 +27,35 @@ public class Player {
         private static Background bg1 = TanksGame.getBg1();                 
         private static Background bg2 = TanksGame.getBg2();
         private ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
-        private Weapon weapon = new Weapon(1, 1, 1, 1, 1, 1, 0);
+        private Weapon primaryWeapon = new Weapon(1, 1, 1, 1, 1, 1, 0);
+        private Weapon secondaryWeapon = new Weapon(1, 1, 1, 1, 1, 1, 0);
         private StatusEffects status = new StatusEffects();
         private Ability ability = new Ability(0, 0);
         
         Player() {
             baseMaxHP = 500;
             maxHP = baseMaxHP;
-            HP = baseMaxHP;
+            HP = 200;
             
-            baseRegen = 20;
+            baseRegen = 5;
             regen = baseRegen;
+            regenCooldown = 0.0;
             
             baseArmor = 20;
-            armor = baseRegen;
+            armor = baseArmor;
             
             baseSpeed = 5;
             speed = baseSpeed;
         }
         
 	public void update() {
-            weapon.update();
+            primaryWeapon.update();
+            secondaryWeapon.update();
             status.update();
             ability.update();
             updateStatusEffects();
             updateSpeed();
+            updateRegen();
             
             // Moves Character or Scrolls Background accordingly.
             bg1.setSpeedX(speedX);
@@ -61,21 +65,40 @@ public class Player {
             
 	}
 
-        public void shoot(double mouseX, double mouseY) {
-            if(weapon.getCooldown() == 0 && !status.isWeaponJammed())
+        public void shootPrimary(double mouseX, double mouseY) {
+            if(primaryWeapon.getCooldown() == 0.0 && !status.isWeaponJammed())
             {
                 int gunX = centerX + 53;
                 int gunY = centerY - 9;
                 double deltaX = gunX - mouseX;
                 double deltaY = gunY - mouseY;
                 
-                if(weapon.getBullet_number() == 0) {
+                if(primaryWeapon.getBullet_number() == 0) {
                 }
-                else if(weapon.getBullet_number() == 1)
-                     projectiles.add(weapon.getProjectile(gunX, gunY, deltaX, deltaY));
+                else if(primaryWeapon.getBullet_number() == 1)
+                     projectiles.add(primaryWeapon.getProjectile(gunX, gunY, deltaX, deltaY));
                 else {
-                    for(int i = 1; i <= weapon.getBullet_number(); i++)
-                        projectiles.add(weapon.getProjectileShotgun(gunX, gunY, deltaX, deltaY, i));
+                    for(int i = 1; i <= primaryWeapon.getBullet_number(); i++)
+                        projectiles.add(primaryWeapon.getProjectileShotgun(gunX, gunY, deltaX, deltaY, i));
+                }
+            }
+        }
+        
+        public void shootSecondary(double mouseX, double mouseY) {
+            if(secondaryWeapon.getCooldown() == 0)
+            {
+                int gunX = centerX + 53;
+                int gunY = centerY - 9;
+                double deltaX = gunX - mouseX;
+                double deltaY = gunY - mouseY;
+                
+                if(secondaryWeapon.getBullet_number() == 0) {
+                }
+                else if(secondaryWeapon.getBullet_number() == 1)
+                     projectiles.add(secondaryWeapon.getProjectile(gunX, gunY, deltaX, deltaY));
+                else {
+                    for(int i = 1; i <= secondaryWeapon.getBullet_number(); i++)
+                        projectiles.add(secondaryWeapon.getProjectileShotgun(gunX, gunY, deltaX, deltaY, i));
                 }
             }
         }
@@ -117,7 +140,7 @@ public class Player {
             if(status.isRegenReduction())
                 regen = 0;
             else if(status.isRegenBoost())
-                regen = baseRegen * 3;
+                regen = (int) (baseRegen * 2.5);
             else
                 regen = baseRegen;
             
@@ -127,20 +150,20 @@ public class Player {
                 regen = regen;
             //Damage
             if(status.isDamageReduction())
-                weapon.setDamage((int) Math.round(0.7 * weapon.getBaseDamage()));
+                primaryWeapon.setDamage((int) Math.round(0.7 * primaryWeapon.getBaseDamage()));
             else if(status.isDamageBoost())
-                weapon.setDamage((int) Math.round(1.2 * weapon.getBaseDamage()));
+                primaryWeapon.setDamage((int) Math.round(1.2 * primaryWeapon.getBaseDamage()));
             else
-                weapon.setDamage(weapon.getBaseDamage());
+                primaryWeapon.setDamage(primaryWeapon.getBaseDamage());
             //Reload
             if(status.isWeaponJammed()){
             }
             else if(status.isReloadReduction())
-                weapon.setReload(2.0 * weapon.getBaseReload());
+                primaryWeapon.setReload(2.0 * primaryWeapon.getBaseReload());
             else if(status.isReloadBoost())
-                weapon.setReload(0.7 * weapon.getBaseReload());
+                primaryWeapon.setReload(0.7 * primaryWeapon.getBaseReload());
             else
-                weapon.setReload(weapon.getBaseReload());
+                primaryWeapon.setReload(primaryWeapon.getBaseReload());
             
         }
         
@@ -166,6 +189,24 @@ public class Player {
                 speedY = speed;
             else if(movingUp )
                 speedY = -speed;
+        }
+        
+        public void updateRegen() {
+            if(Math.abs(1.0 * regen * regenCooldown) > 1.0 * maxHP / 100) {
+                HP += 1.0 * regen * regenCooldown;
+                if(HP > maxHP)
+                    HP = maxHP;
+                regenCooldown = 0.0;
+            }
+            regenCooldown += 0.017;    
+        }
+        
+        public int getHpPercent() {
+            int percent = 0;
+            percent = (int) Math.floor(1.0 * HP / maxHP * 100);
+            if(percent < 1)
+                percent = 1;
+            return percent;
         }
         
 	public void moveRight() {
@@ -274,12 +315,12 @@ public class Player {
 	return projectiles;
     } 
 
-    public Weapon getWeapon() {
-        return weapon;
+    public Weapon getPrimaryWeapon() {
+        return primaryWeapon;
     }
 
-    public void setWeapon(Weapon playerWeapon) {
-        this.weapon = playerWeapon;
+    public void setPrimaryWeapon(Weapon playerWeapon) {
+        this.primaryWeapon = playerWeapon;
     }
 
     public Ability getAbility() {
@@ -289,7 +330,14 @@ public class Player {
     public void setAbility(Ability ability) {
         this.ability = ability;
     }
-    
-    
+
+    public Weapon getSecondaryWeapon() {
+        return secondaryWeapon;
+    }
+
+    public void setSecondaryWeapon(Weapon secondaryWeapon) {
+        this.secondaryWeapon = secondaryWeapon;
+    }
+
     
 } 
