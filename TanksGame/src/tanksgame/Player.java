@@ -9,9 +9,15 @@ import java.util.ArrayList;
 public class Player {
         //In Java, Class Variables should be private so that only its methods can change them.
 	private int centerX = 700;
-	private int centerY = 500;
+	private int centerY = 500;  
 	private int speedX = 0;
 	private int speedY = 0;
+        
+        private int baseMaxHP, maxHP, HP;
+        private int baseRegen, regen;
+        private int baseArmor, armor;
+        private int baseSpeed, speed;
+        
         
         private boolean movingLeft = false;
         private boolean movingRight = false;
@@ -22,31 +28,41 @@ public class Player {
         private static Background bg2 = TanksGame.getBg2();
         private ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
         private Weapon weapon = new Weapon(1, 1, 1, 1, 1, 1, 0);
+        private StatusEffects status = new StatusEffects();
+        private Ability ability = new Ability(0, 0);
+        
+        Player() {
+            baseMaxHP = 500;
+            maxHP = baseMaxHP;
+            HP = baseMaxHP;
+            
+            baseRegen = 20;
+            regen = baseRegen;
+            
+            baseArmor = 20;
+            armor = baseRegen;
+            
+            baseSpeed = 5;
+            speed = baseSpeed;
+        }
         
 	public void update() {
-		// Moves Character or Scrolls Background accordingly.
-                if (speedX == 0) {
-                    bg1.setSpeedX(0);
-                    bg2.setSpeedX(0);
-                }
-                else {
-                    bg1.setSpeedX(speedX);
-                    bg2.setSpeedX(speedX);
-                }
-                
-                if (speedY == 0) {
-                    bg1.setSpeedY(0);
-                    bg2.setSpeedY(0);
-                }
-                else {
-                    bg1.setSpeedY(speedY);
-                    bg2.setSpeedY(speedY);
-                }
-                weapon.update();
+            weapon.update();
+            status.update();
+            ability.update();
+            updateStatusEffects();
+            updateSpeed();
+            
+            // Moves Character or Scrolls Background accordingly.
+            bg1.setSpeedX(speedX);
+            bg2.setSpeedX(speedX);
+            bg1.setSpeedY(speedY);
+            bg2.setSpeedY(speedY);
+            
 	}
 
         public void shoot(double mouseX, double mouseY) {
-            if(weapon.getCooldown() == 0)
+            if(weapon.getCooldown() == 0 && !status.isWeaponJammed())
             {
                 int gunX = centerX + 53;
                 int gunY = centerY - 9;
@@ -64,67 +80,128 @@ public class Player {
             }
         }
         
+        public void useAbility() {
+            if(ability.getCooldown() == 0 && ability.getDuration() == 0)
+                status.changeStatus(ability.effects());
+            else if(ability.getDuration() != 0) {
+                status.resetStatus(ability.effects());
+                ability.setDuration(0);
+            }
+        }
+        
+        public void updateStatusEffects() {
+            //Speed
+            if(status.isParalyzed())
+                speed = 0;
+            else if(status.isSlowed())
+                speed = 2;
+            else if(status.isSprint())
+                speed = baseSpeed * 2;
+            else if(status.isSpeedy())
+                speed = baseSpeed + 3;
+            else
+                speed = baseSpeed;            
+            //Armor
+            if(status.isArmorBoost())
+                armor = (int) Math.round(baseArmor * 1.25);
+            else
+                armor = baseArmor;
+            
+            if(status.isArmorBroken())
+                armor = (int) Math.round(baseArmor * 0.5);
+            else if(status.isFortified())
+                armor = (int) Math.round(baseArmor * 1.5);
+            else
+                armor = armor;
+            //HP Regen
+            if(status.isRegenReduction())
+                regen = 0;
+            else if(status.isRegenBoost())
+                regen = baseRegen * 3;
+            else
+                regen = baseRegen;
+            
+            if(status.isSabotage())
+                regen = -regen;
+            else
+                regen = regen;
+            //Damage
+            if(status.isDamageReduction())
+                weapon.setDamage((int) Math.round(0.7 * weapon.getBaseDamage()));
+            else if(status.isDamageBoost())
+                weapon.setDamage((int) Math.round(1.2 * weapon.getBaseDamage()));
+            else
+                weapon.setDamage(weapon.getBaseDamage());
+            //Reload
+            if(status.isWeaponJammed()){
+            }
+            else if(status.isReloadReduction())
+                weapon.setReload(2.0 * weapon.getBaseReload());
+            else if(status.isReloadBoost())
+                weapon.setReload(0.7 * weapon.getBaseReload());
+            else
+                weapon.setReload(weapon.getBaseReload());
+            
+        }
+        
+        public void updateSpeed() {
+            if(!movingRight && !movingLeft)
+                speedX = 0;
+            else if(movingLeft && (movingUp || movingDown) )
+                speedX = (int) Math.ceil(speed / 1.4);
+            else if(movingRight && (movingUp || movingDown) )
+                speedX = (int) -Math.ceil(speed / 1.4);
+            else if(movingLeft )
+                speedX = speed;
+            else if(movingRight )
+                speedX = -speed;
+            
+            if(!movingUp && !movingDown)
+                speedY = 0;
+            else if(movingDown && (movingRight || movingLeft) )
+                speedY = (int) Math.ceil(speed / 1.4);
+            else if(movingUp && (movingRight || movingLeft) )
+                speedY = (int) -Math.ceil(speed / 1.4);
+            else if(movingDown )
+                speedY = speed;
+            else if(movingUp )
+                speedY = -speed;
+        }
+        
 	public void moveRight() {
-		speedX = -5;
+            setMovingRight(true);
+            setMovingLeft(false);
 	}
 
 	public void moveLeft() {
-		speedX = 5;
+            setMovingLeft(true);
+            setMovingRight(false);
 	}
         
         public void moveUp() {
-		speedY = -5;
+            setMovingUp(true);
+            setMovingDown(false);
 	}
         
         public void moveDown() {
-		speedY = 5;
+            setMovingDown(true);
+            setMovingUp(false);
 	}
 
         public void stopRight() {
             setMovingRight(false);
-            stop();
         }
 
         public void stopLeft() {
             setMovingLeft(false);
-            stop();
         }
         
         public void stopUp() {
             setMovingUp(false);
-            stop();
         }
 
         public void stopDown() {
             setMovingDown(false);
-            stop();
-        }
-        
-        private void stop() {
-            if (isMovingRight() == false && isMovingLeft() == false) {
-                speedX = 0;
-            }
-
-            if (isMovingRight() == false && isMovingLeft() == true) {
-                moveLeft();
-            }
-
-            if (isMovingRight() == true && isMovingLeft() == false) {
-                moveRight();
-            }
-            
-            
-            if (isMovingUp() == false && isMovingDown() == false) {
-                speedY = 0;
-            }
-
-            if (isMovingUp() == false && isMovingDown() == true) {
-                moveDown();
-            }
-
-            if (isMovingUp() == true && isMovingDown() == false) {
-                moveUp();
-            }
         }
     
 
@@ -203,6 +280,14 @@ public class Player {
 
     public void setWeapon(Weapon playerWeapon) {
         this.weapon = playerWeapon;
+    }
+
+    public Ability getAbility() {
+        return ability;
+    }
+
+    public void setAbility(Ability ability) {
+        this.ability = ability;
     }
     
     

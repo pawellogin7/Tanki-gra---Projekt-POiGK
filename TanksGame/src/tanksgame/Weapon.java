@@ -4,19 +4,24 @@ import java.util.Random;
 
 
 public class Weapon {
-    private int damage, accuracy, armor_pen, range, bullet_velocity, bullet_number;
-    private double  reload;
+    private int baseDamage, baseAccuracy, baseArmorPen, range, bullet_velocity, bullet_number;
+    private int damage, accuracy, armorPen;
+    private double  baseReload, reload;
     private int cooldown, projectileType;
     
     Weapon(int dmg, double rld, int acc, int a_pen, int rng, int vel, int num) {
-        damage = dmg;
-        reload = rld;
-        accuracy = acc;
-        armor_pen = a_pen;
+        baseDamage = dmg;
+        baseReload = rld;
+        baseAccuracy = acc;
+        baseArmorPen = a_pen;
         range = rng;
         bullet_velocity = vel;
         bullet_number = num;
         
+        armorPen = baseArmorPen;
+        damage = baseDamage;
+        reload = baseReload;
+        accuracy = baseAccuracy;       
         projectileType = 0;
         cooldown = 0;
     }
@@ -26,7 +31,7 @@ public class Weapon {
             cooldown -= 17;
             if(cooldown < 0)
                 cooldown = 0;
-        }    
+        } 
     }
     
     Projectile getProjectile(int startX, int startY, double deltaX, double deltaY) {
@@ -36,12 +41,12 @@ public class Weapon {
         double angle = 0;
         
         if(znak)
-            angle = Math.atan2(deltaY , deltaX) + ((100 - accuracy) / 100.0) * losuj * Math.PI / 2;
+            angle = Math.atan2(deltaY , deltaX) + (1.0 *(100 - accuracy) / 100.0) * losuj * Math.PI / 2;
         else
-            angle = Math.atan2(deltaY , deltaX) - ((100 - accuracy) / 100.0) * losuj * Math.PI / 2;       
+            angle = Math.atan2(deltaY , deltaX) - (1.0 * (100 - accuracy) / 100.0) * losuj * Math.PI / 2;       
      
         cooldown = (int) (reload * 1000);
-        Projectile proj = new Projectile(startX, startY, angle, bullet_velocity, range, damage, armor_pen, projectileType);
+        Projectile proj = new Projectile(startX, startY, angle, bullet_velocity, range, damage, armorPen, projectileType);
         return proj;
     }
     
@@ -49,34 +54,26 @@ public class Weapon {
         double angle = 0;
         if(bullet_number % 2 == 0)
         {
-            double jump = (100 - accuracy) / 100.0 / (bullet_number - 1) * Math.PI / 2;
-            angle = Math.atan2(deltaY , deltaX) - jump * (proj_id - bullet_number / 2 - 1);
+            double jump = 1.0 * (100 - accuracy) / 100.0 / (bullet_number - 1) * Math.PI / 2;
+            angle = Math.atan2(deltaY , deltaX) - jump * 1.0 * (proj_id - bullet_number / 2 - 1);
         }
         else
         {
-            double jump = (100 - accuracy) / 100.0 / (bullet_number - 1) * Math.PI / 2;
-            angle = Math.atan2(deltaY , deltaX) - jump * (proj_id - (bullet_number - 1) / 2 - 1);
+            double jump = 1.0 * (100 - accuracy) / 100.0 / (bullet_number - 1) * Math.PI / 2;
+            angle = Math.atan2(deltaY , deltaX) - jump * 1.0 * (proj_id - (bullet_number - 1) / 2 - 1) * 1.0;
         }
         
         cooldown = (int) (reload * 1000);
-        Projectile proj = new Projectile(startX, startY, angle, bullet_velocity, range, damage, armor_pen, projectileType);
+        Projectile proj = new Projectile(startX, startY, angle, bullet_velocity, range, damage, armorPen, projectileType);
         return proj;
     }
-       
+
     public int getDamage() {
         return damage;
     }
 
     public void setDamage(int damage) {
         this.damage = damage;
-    }
-
-    public double getReload() {
-        return reload;
-    }
-
-    public void setReload(double reload) {
-        this.reload = reload;
     }
 
     public int getAccuracy() {
@@ -87,36 +84,36 @@ public class Weapon {
         this.accuracy = accuracy;
     }
 
-    public int getArmor_pen() {
-        return armor_pen;
+    public int getArmorPen() {
+        return armorPen;
     }
 
-    public void setArmor_pen(int armor_pen) {
-        this.armor_pen = armor_pen;
+    public void setArmorPen(int armorPen) {
+        this.armorPen = armorPen;
     }
 
-    public int getRange() {
-        return range;
+    public double getReload() {
+        return reload;
     }
 
-    public void setRange(int range) {
-        this.range = range;
-    }
-    
-    public int getBullet_velocity() {
-        return bullet_velocity;
+    public void setReload(double reload) {
+        this.reload = reload;
     }
 
-    public void setBullet_velocity(int bullet_velocity) {
-        this.bullet_velocity = bullet_velocity;
+    public int getBaseDamage() {
+        return baseDamage;
     }
 
-    public int getBullet_number() {
-        return bullet_number;
+    public int getBaseAccuracy() {
+        return baseAccuracy;
     }
 
-    public void setBullet_number(int bullet_number) {
-        this.bullet_number = bullet_number;
+    public int getBaseArmorPen() {
+        return baseArmorPen;
+    }
+
+    public double getBaseReload() {
+        return baseReload;
     }
 
     public int getCooldown() {
@@ -127,16 +124,17 @@ public class Weapon {
         this.cooldown = cooldown;
     }
 
+    public int getBullet_number() {
+        return bullet_number;
+    }
+   
+    
     public int getProjectileType() {
         return projectileType;
     }
 
     public void setProjectileType(int projectileType) {
         this.projectileType = projectileType;
-    }
-    
-    
-    
-    
+    }    
     
 }

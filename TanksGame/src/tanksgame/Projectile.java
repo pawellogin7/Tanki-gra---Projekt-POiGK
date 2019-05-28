@@ -13,8 +13,8 @@ public class Projectile {
         velocity = vel;
         range = rng;
         
-        speedX = (int) Math.round( velocity * Math.cos(angle) );
-        speedY = (int) Math.round( velocity * Math.sin(angle) );
+        speedX = (int) Math.round( 1.0 * velocity * Math.cos(angle) );
+        speedY = (int) Math.round( 1.0 * velocity * Math.sin(angle) );
         
         visible = true;
         distanceX = 0;
@@ -27,7 +27,7 @@ public class Projectile {
         y += -speedY - bg.getSpeedY();
         distanceX += speedX;
         distanceY += speedY;
-        int distance = (int) Math.round(Math.sqrt(distanceX*distanceX + distanceY*distanceY));
+        int distance = (int) Math.round(Math.sqrt(1.0 * distanceX*distanceX + 1.0 * distanceY*distanceY));
         if (distance > range) {
             visible = false;
         }
