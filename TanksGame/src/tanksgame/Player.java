@@ -17,7 +17,7 @@ public class Player {
         private int baseRegen, regen;
         private int baseArmor, armor;
         private int baseSpeed, speed;
-        double regenCooldown;
+        double regenCooldown;               
         
         private boolean movingLeft = false;
         private boolean movingRight = false;
@@ -27,25 +27,99 @@ public class Player {
         private static Background bg1 = TanksGame.getBg1();                 
         private static Background bg2 = TanksGame.getBg2();
         private ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
-        private Weapon primaryWeapon = new Weapon(1, 1, 1, 1, 1, 1, 0);
-        private Weapon secondaryWeapon = new Weapon(1, 1, 1, 1, 1, 1, 0);
+        
+        private TankBody body;
+        private Weapon nullWeapon = new Weapon(1, 1, 1, 1, 1, 1, 0);
+        private Weapon primaryWeapon = nullWeapon;
+        private Weapon primaryWeapon1 = nullWeapon;
+        private Weapon primaryWeapon2 = nullWeapon;
+        private Weapon primaryWeapon3 = nullWeapon;
+        private Weapon secondaryWeapon = nullWeapon;
         private StatusEffects status = new StatusEffects();
         private Ability ability = new Ability(0, 0);
+        private Module module1;
+        private Module module2;
+        private Module module3;
         
-        Player() {
-            baseMaxHP = 500;
+        Player(Equipment eq) {
+            body = eq.getTankBodies().get(eq.getBodyID());
+            primaryWeapon1 = eq.getPrimaryWeapons().get(eq.getPrimary1ID());
+            primaryWeapon2 = eq.getPrimaryWeapons().get(eq.getPrimary2ID());
+            primaryWeapon3 = eq.getPrimaryWeapons().get(eq.getPrimary3ID());
+            secondaryWeapon = eq.getSecondaryWeapons().get(eq.getSecondaryID());
+            ability = eq.getAbilities().get(eq.getAbilityID());
+            module1 = eq.getModules().get(eq.getModule1ID());
+            module2 = eq.getModules().get(eq.getModule2ID());
+            module3 = eq.getModules().get(eq.getModule3ID());
+            
+            baseMaxHP = body.getMaxHp() + checkModules(1);
             maxHP = baseMaxHP;
             HP = 200;
             
-            baseRegen = 5;
+            baseRegen = body.getRegen() + checkModules(2);
             regen = baseRegen;
             regenCooldown = 0.0;
             
-            baseArmor = 20;
+            baseSpeed = body.getMoveSpeed() + checkModules(3);
+            speed = baseSpeed;
+            primaryWeapon = primaryWeapon1;
+            
+            baseArmor = body.getArmor() + checkModules(4);
             armor = baseArmor;
             
-            baseSpeed = 5;
-            speed = baseSpeed;
+            double damageBoost = 1.0 + (1.0 * checkModules(10) / 100);
+            double reloadBoost = 1.0 - (1.0 * checkModules(11) / 100);
+            double accuracyBoost = (1.0 * checkModules(12) / 100);
+            double armorPenBoost = 1.0 + (1.0 * checkModules(13) / 100);
+            double rangeBoost = 1.0 + (1.0 * checkModules(14) / 100);
+            
+            primaryWeapon1.setBaseDamage((int) (1.0 * primaryWeapon1.getBaseDamage() * damageBoost));
+            primaryWeapon1.setBaseReload(1.0 * primaryWeapon1.getBaseReload() * reloadBoost);
+            primaryWeapon1.setBaseAccuracy((int) (1.0 * primaryWeapon1.getBaseAccuracy() * accuracyBoost));
+            primaryWeapon1.setBaseArmorPen((int) (1.0 * primaryWeapon1.getBaseArmorPen() * armorPenBoost));
+            primaryWeapon1.setRange((int) (1.0 * primaryWeapon1.getRange() * rangeBoost));
+            
+            primaryWeapon2.setBaseDamage((int) (1.0 * primaryWeapon2.getBaseDamage() * damageBoost));
+            primaryWeapon2.setBaseReload(1.0 * primaryWeapon2.getBaseReload() * reloadBoost);
+            primaryWeapon2.setBaseAccuracy((int) (1.0 * primaryWeapon2.getBaseAccuracy() * accuracyBoost));
+            primaryWeapon2.setBaseArmorPen((int) (1.0 * primaryWeapon2.getBaseArmorPen() * armorPenBoost));
+            primaryWeapon2.setRange((int) (1.0 * primaryWeapon2.getRange() * rangeBoost));
+            
+            primaryWeapon3.setBaseDamage((int) (1.0 * primaryWeapon3.getBaseDamage() * damageBoost));
+            primaryWeapon3.setBaseReload(1.0 * primaryWeapon3.getBaseReload() * reloadBoost);
+            primaryWeapon3.setBaseAccuracy((int) (1.0 * primaryWeapon3.getBaseAccuracy() * accuracyBoost));
+            primaryWeapon3.setBaseArmorPen((int) (1.0 * primaryWeapon3.getBaseArmorPen() * armorPenBoost));
+            primaryWeapon3.setRange((int) (1.0 * primaryWeapon3.getRange() * rangeBoost));
+        }
+        
+        private int checkModules(int statType) {
+            int statEffect = 0;
+            if(module1.getStat1Type() == statType)
+                statEffect += module1.getStat1Effect();
+            else if(module1.getStat2Type() == statType)
+                statEffect += module1.getStat2Effect();
+            else if(module1.getStat3Type() == statType)
+                statEffect += module1.getStat3Effect();
+            
+            if(body.getModuleSlots() >= 2) {
+                if(module2.getStat1Type() == statType)
+                    statEffect += module2.getStat1Effect();
+                else if(module2.getStat2Type() == statType)
+                    statEffect += module2.getStat2Effect();
+                else if(module2.getStat3Type() == statType)
+                    statEffect += module2.getStat3Effect();
+            }
+            
+            if(body.getModuleSlots() >= 3) {
+                if(module3.getStat1Type() == statType)
+                    statEffect += module3.getStat1Effect();
+                else if(module3.getStat2Type() == statType)
+                    statEffect += module3.getStat2Effect();
+                else if(module3.getStat3Type() == statType)
+                    statEffect += module3.getStat3Effect();
+            }
+            
+            return statEffect;
         }
         
 	public void update() {
@@ -64,6 +138,22 @@ public class Player {
             bg2.setSpeedY(speedY);
             
 	}
+        
+        public void changeWeapon(int key) {
+            switch(key) {
+                case 1:
+                    primaryWeapon = primaryWeapon1;
+                    break;
+                case 2:
+                    if(body.getPrimaryWeaponSlots() >= 2)
+                        primaryWeapon = primaryWeapon2;
+                    break;
+                case 3:
+                    if(body.getPrimaryWeaponSlots() >= 3)
+                        primaryWeapon = primaryWeapon3;
+                    break;
+            }
+        }
 
         public void shootPrimary(double mouseX, double mouseY) {
             if(primaryWeapon.getCooldown() == 0.0 && !status.isWeaponJammed())
@@ -227,24 +317,7 @@ public class Player {
         public void moveDown() {
             setMovingDown(true);
             setMovingUp(false);
-	}
-
-        public void stopRight() {
-            setMovingRight(false);
-        }
-
-        public void stopLeft() {
-            setMovingLeft(false);
-        }
-        
-        public void stopUp() {
-            setMovingUp(false);
-        }
-
-        public void stopDown() {
-            setMovingDown(false);
-        }
-    
+	}  
 
     public int getCenterX() {
         return centerX;

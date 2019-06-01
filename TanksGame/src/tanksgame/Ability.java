@@ -2,9 +2,11 @@ package tanksgame;
 
 
 public class Ability {
-    double baseDuration, baseCooldown; 
-    double cooldown, duration, silencedTime;
-    StatusEffects status = new StatusEffects();
+    private double baseDuration, baseCooldown; 
+    private double cooldown, duration, silencedTime;
+    private StatusEffects status = new StatusEffects();
+    private int tier, cost;
+    private String name;
     
     Ability(double dur, double cool) {
         baseDuration = dur;
@@ -88,6 +90,30 @@ public class Ability {
 
     public void setDuration(double duration) {
         this.duration = duration;
+    }
+
+    public int getTier() {
+        return tier;
+    }
+
+    public void setTier(int tier) {
+        this.tier = tier;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getCost() {
+        return cost;
+    }
+
+    public void setCost(int cost) {
+        this.cost = cost;
     }
 
     

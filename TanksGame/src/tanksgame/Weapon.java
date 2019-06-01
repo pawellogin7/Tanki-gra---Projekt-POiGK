@@ -7,8 +7,9 @@ public class Weapon {
     private int baseDamage, baseAccuracy, baseArmorPen, range, bullet_velocity, bullet_number;
     private int damage, accuracy, armorPen;
     private double  baseReload, reload, cooldown;
-    private int projectileType;
+    private int projectileType, tier, cost;
     private StatusEffects status = new StatusEffects();
+    private String name;
     
     Weapon(int dmg, double rld, int acc, int a_pen, int rng, int vel, int num) {
         baseDamage = dmg;
@@ -42,9 +43,9 @@ public class Weapon {
         double angle = 0;
         
         if(znak)
-            angle = Math.atan2(deltaY , deltaX) + (1.0 *(100 - accuracy) / 100.0) * losuj * Math.PI / 2;
+            angle = Math.atan2(deltaY , deltaX) + (1.0 *(100 - accuracy) / 100.0) * losuj * Math.PI;
         else
-            angle = Math.atan2(deltaY , deltaX) - (1.0 * (100 - accuracy) / 100.0) * losuj * Math.PI / 2;       
+            angle = Math.atan2(deltaY , deltaX) - (1.0 * (100 - accuracy) / 100.0) * losuj * Math.PI;       
      
         cooldown = reload;
         Projectile proj = new Projectile(startX, startY, angle, bullet_velocity, range, damage, armorPen, projectileType);
@@ -55,12 +56,12 @@ public class Weapon {
         double angle = 0;
         if(bullet_number % 2 == 0)
         {
-            double jump = 1.0 * (100 - accuracy) / 100.0 / (bullet_number - 1) * Math.PI / 2;
+            double jump = 1.0 * (100 - accuracy) / 100.0 / (bullet_number - 1) * Math.PI;
             angle = Math.atan2(deltaY , deltaX) - jump * 1.0 * (proj_id - bullet_number / 2 - 1);
         }
         else
         {
-            double jump = 1.0 * (100 - accuracy) / 100.0 / (bullet_number - 1) * Math.PI / 2;
+            double jump = 1.0 * (100 - accuracy) / 100.0 / (bullet_number - 1) * Math.PI;
             angle = Math.atan2(deltaY , deltaX) - jump * 1.0 * (proj_id - (bullet_number - 1) / 2 - 1) * 1.0;
         }
         
@@ -124,6 +125,24 @@ public class Weapon {
         return baseReload;
     }
 
+    public int getRange() {
+        return range;
+    }
+
+    public void setRange(int range) {
+        this.range = range;
+    }
+
+    public int getBullet_velocity() {
+        return bullet_velocity;
+    }
+
+    public void setBullet_velocity(int bullet_velocity) {
+        this.bullet_velocity = bullet_velocity;
+    }
+
+    
+    
     public double getCooldown() {
         return cooldown;
     }
@@ -152,6 +171,55 @@ public class Weapon {
     public void setStatus(StatusEffects status) {
         this.status = status;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getTier() {
+        return tier;
+    }
+
+    public void setTier(int tier) {
+        this.tier = tier;
+    }
+
+    public int getCost() {
+        return cost;
+    }
+
+    public void setCost(int cost) {
+        this.cost = cost;
+    }
+
+    public void setBaseDamage(int baseDamage) {
+        this.baseDamage = baseDamage;
+    }
+
+    public void setBaseAccuracy(int baseAccuracy) {
+        this.baseAccuracy = baseAccuracy;
+    }
+
+    public void setBaseArmorPen(int baseArmorPen) {
+        this.baseArmorPen = baseArmorPen;
+    }
+
+    public void setBullet_number(int bullet_number) {
+        this.bullet_number = bullet_number;
+    }
+
+    public void setBaseReload(double baseReload) {
+        this.baseReload = baseReload;
+    }
+
+    public void setCooldown(double cooldown) {
+        this.cooldown = cooldown;
+    }
+    
     
     
 }

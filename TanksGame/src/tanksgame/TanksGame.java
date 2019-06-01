@@ -17,6 +17,8 @@ import java.util.ArrayList;
 
 public class TanksGame extends Applet implements Runnable, KeyListener, MouseListener, MouseMotionListener {
 
+    private MenuWindow menu;
+    private ArmoryWindow armory;
     private Player player;
     private EnemyTank t1, t2;
     private Weapon machineGun, shotGun, sniperGun, doubleGun, flameGun, laserGun;
@@ -33,7 +35,19 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     boolean mouseMoving = false;
     private int cusorWidth = 16;
     private int cursorHeight = 16;
+    private int currentWindow = 0;
+    private boolean currentWindowChanged = false;
+    private boolean escKey = false;
     
+    private Equipment equipment;
+    private int[] tankBodies = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    private int[] primaryWeapons = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    private int[] secondaryWeapons = {0, 1, 0, 0, 0, 0, 0, 0, 0};
+    private int[] abilities = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    private int[] modules = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    private int[] playerEquipped = {1, 1, 0, 0, 1, 1, 1, 0, 0};
+    
+    private Weapon Demise;
     
     @Override
     public void init() {
@@ -53,6 +67,8 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
             // TODO: handle exception
 	}
 
+        
+        
 	//Image Setups        
 	character = getImage(base, "../data/playerTank.png");
         background = getImage(base, "../data/background.png");
@@ -61,6 +77,36 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         playerBullet = getImage(base, "../data/playerBullet.png");
         projectileFire = getImage(base, "../data/projectileFire.png");
         projectileLaser = getImage(base, "../data/projectileLaser.png");
+        
+        
+        menu = new MenuWindow();
+        armory = new ArmoryWindow();
+        equipment = new Equipment();
+        for(int i = 0; i < tankBodies.length; i++) {
+            equipment.setTankBodiesTier(i, tankBodies[i]);
+        }
+        for(int i = 0; i < primaryWeapons.length; i++) {
+            equipment.setPrimaryWeaponsTier(i, primaryWeapons[i]);
+        }
+        for(int i = 0; i < secondaryWeapons.length; i++) {
+            equipment.setSecondaryWeaponsTier(i, secondaryWeapons[i]);
+        }
+        for(int i = 0; i < abilities.length; i++) {
+            equipment.setAbilitiesTier(i, abilities[i]);
+        }
+        for(int i = 0; i < modules.length; i++) {
+            equipment.setModulesTier(i, modules[i]);
+        }
+        equipment.setBodyID(playerEquipped[0]);
+        equipment.setPrimary1ID(playerEquipped[1]);
+        equipment.setPrimary2ID(playerEquipped[3]);
+        equipment.setPrimary2ID(playerEquipped[3]);
+        equipment.setSecondaryID(playerEquipped[4]);
+        equipment.setAbilityID(playerEquipped[5]);
+        equipment.setModule1ID(playerEquipped[6]);
+        equipment.setModule1ID(playerEquipped[7]);
+        equipment.setModule1ID(playerEquipped[8]);
+        
         
         //Weapon creation
         machineGun = new Weapon(50, 0.1, 85, 5, 800, 12, 1);
@@ -71,7 +117,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         flameGun.setProjectileType(3);
         laserGun = new Weapon(10, 0.017, 100, 50, 800, 15, 1);
         laserGun.setProjectileType(2);
-        
+        Demise = new Weapon(100, 0.051, 25, 100, 1200, 20, 20);
         //Secondaryweapon creation
         slowingShot = new Weapon(10, 10, 70, 0, 800, 14, 5);
         slowingShot.getStatus().setSlowed(true);
@@ -120,10 +166,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         bg1 = new Background(0, 0);
         bg2 = new Background(2160, 0); 
         
-        player = new Player();
-        player.setPrimaryWeapon(machineGun);
-        player.setSecondaryWeapon(armorBreakShot);
-        player.setAbility(regenBoost);
+        player = new Player(equipment);
         t1 = new EnemyTank(340, 360);
         t2 = new EnemyTank(700, 360);
         
@@ -141,7 +184,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
 
     @Override
     public void destroy() {
-        // TODO Auto-generated method stub
+        System.exit(1);
     }
 
     
@@ -159,10 +202,10 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
             }
             
             if(mouse1Down)
-                player.shootPrimary(mouseX + cusorWidth / 2, mouseY + cursorHeight / 2);
+                player.shootPrimary(mouseX, mouseY);
             
             if(mouse2Down)
-                player.shootSecondary(mouseX + cusorWidth / 2, mouseY + cursorHeight / 2);
+                player.shootSecondary(mouseX, mouseY);
                 
             bg1.update();
             bg2.update();
@@ -198,13 +241,92 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
 
     
     @Override
-    public void paint(Graphics g) {       
+    public void paint(Graphics g) { 
+        
+        switch(currentWindow) {
+            case 0: {
+                if(currentWindowChanged) {
+                    mouse1Down = false;
+                    menu = new MenuWindow();
+                    currentWindowChanged = false;
+                }
+                menu.update(g, mouseX, mouseY, mouse1Down);
+                switch(menu.getButtonClicked()) {
+                    case 0:
+                        break;
+                    case 1:
+                        currentWindow = 11;
+                        break;
+                    case 2:
+                        currentWindow = 1;
+                        break;
+                    case 3:
+                        destroy();
+                }
+                if(escKey) {
+                    destroy();
+                    escKey = false;
+                }
+                    
+                break;
+            }
+            case 1: {
+                if(currentWindowChanged) {
+                    armory = new ArmoryWindow();
+                    currentWindowChanged = false;
+                }
+                equipment.update();
+                armory.setEq(equipment);
+                armory.update(g, mouseX, mouseY, mouse1Down, !mouse1Down, equipment);
+                equipment = armory.getEq();
+                player = new Player(equipment);
+                
+                switch(armory.getButtonClicked()) {
+                    case 0:
+                        break;
+                    case 1:
+                        currentWindow = 0;
+                        break;
+                }
+                if(escKey) {
+                    currentWindow = 0;
+                    escKey = false;
+                }
+                break;
+            }
+            
+            case 11: {
+                drawLevel1(g);
+                if(escKey) {
+                    currentWindow = 0;
+                    escKey = false;
+                }
+                break;
+            }
+                    
+        }
+        
+    }
+    
+    
+    
+    public void drawLevel1(Graphics g) {
+        
         g.drawImage(background, bg1.getBgX(), bg1.getBgY(), this);
         g.drawImage(background, bg2.getBgX(), bg2.getBgY(), this);
         
         g.drawImage(enemyTank, t1.getCenterX() - 64, t1.getCenterY() - 32, this);
         g.drawImage(enemyTank, t2.getCenterX() - 64, t2.getCenterY() - 32, this);
         g.drawImage(character, player.getCenterX() - 64, player.getCenterY() - 32, this);
+        
+        ArrayList projectiles = player.getProjectiles();
+	for (int i = 0; i < projectiles.size(); i++) {
+            Projectile p = (Projectile) projectiles.get(i);
+            drawProjectile(p, g);
+        }
+        //g.setFont(new Font("Arial",Font.BOLD,20));
+        //g.drawString("Mouse x: " + mouseX, 5, 140);
+        //g.drawString("Mouse y: "+ mouseY, 5, 170);
         
         int hudX = 320;
         int hudY = 890;
@@ -221,15 +343,6 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         drawHud(hudX, hudY, hudSize, percent, g); //primary weapon hud
         
         drawPlayerHP(500, 908, 400, 20, g);
-        
-        ArrayList projectiles = player.getProjectiles();
-	for (int i = 0; i < projectiles.size(); i++) {
-            Projectile p = (Projectile) projectiles.get(i);
-            drawProjectile(p, g);
-        }
-        //g.setFont(new Font("Arial",Font.BOLD,20));
-        //g.drawString("Mouse x: " + mouseX, 5, 140);
-        //g.drawString("Mouse y: "+ mouseY, 5, 170);       
     }
     
     public void drawProjectile(Projectile p, Graphics g) {
@@ -310,50 +423,36 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         switch (e.getKeyCode()) {
             case KeyEvent.VK_W:
                 player.moveUp();
-                player.setMovingUp(true);;
             break;
 
             case KeyEvent.VK_S:
                 player.moveDown();
-                player.setMovingDown(true);
             break;
 
             case KeyEvent.VK_A:
                 player.moveLeft();
-                player.setMovingLeft(true);
             break;
 
             case KeyEvent.VK_D:
                 player.moveRight();
-                player.setMovingRight(true);
             break;
             
             case KeyEvent.VK_1:
-                player.setPrimaryWeapon(machineGun);
+                player.changeWeapon(1);
             break;
             
             case KeyEvent.VK_2:
-                player.setPrimaryWeapon(shotGun);
+                player.changeWeapon(2);
             break;
             
             case KeyEvent.VK_3:
-                player.setPrimaryWeapon(sniperGun);
+                player.changeWeapon(3);
             break;
-            
-            case KeyEvent.VK_4:
-                player.setPrimaryWeapon(doubleGun);
-            break;
-            
-            case KeyEvent.VK_5:
-                player.setPrimaryWeapon(flameGun);
-            break;
-            
-            case KeyEvent.VK_6:
-                player.setPrimaryWeapon(laserGun);
-            break;
-
             case KeyEvent.VK_SPACE:
                 player.useAbility();
+            break;
+            case KeyEvent.VK_ESCAPE:
+                escKey = true;
             break;
         }
     }
@@ -361,19 +460,19 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     public void keyReleased(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_W:
-                player.stopUp();
+                player.setMovingUp(false);
             break;
 
             case KeyEvent.VK_S:
-                player.stopDown();
+                player.setMovingDown(false);
             break;
 
             case KeyEvent.VK_A:
-                player.stopLeft();
+                player.setMovingLeft(false);
             break;
 
             case KeyEvent.VK_D:
-                player.stopRight();
+                player.setMovingRight(false);
             break;
 
             case KeyEvent.VK_SPACE:
@@ -399,22 +498,22 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     }
     
     public void mouseEntered(MouseEvent e){
-        mouseX = e.getX();
-        mouseY = e.getY();
+        mouseX = e.getX() + 16;
+        mouseY = e.getY() + 16;
     }
     
     public void mouseClicked(MouseEvent e){}
     
     public void mouseMoved(MouseEvent e) {
-        mouseX = e.getX();
-        mouseY = e.getY();
+        mouseX = e.getX() + 16;
+        mouseY = e.getY() + 16;
     }
     
     public void mouseExited(MouseEvent e){}
     
     public void mouseDragged(MouseEvent e){
-        mouseX = e.getX();
-        mouseY = e.getY();
+        mouseX = e.getX() + 16;
+        mouseY = e.getY() + 16;
         if(e.getButton() == e.BUTTON1) {
             mouse1Down = true;
         }
@@ -431,6 +530,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     public static Background getBg2() {
         return bg2;
     }
-  
+
+ 
     
 }
