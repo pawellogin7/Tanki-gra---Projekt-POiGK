@@ -10,83 +10,88 @@ import java.awt.Graphics2D;
 public class MenuWindow{
     private int mouseX;
     private int mouseY;
-    boolean mouseClicked;
+    boolean mouseClicked, mouseLocked;
     private int buttonClicked;
     
-    private int activate;
     
     MenuWindow() {
-        activate = 6;
+        mouseLocked = true;
     }
     
     public void update(Graphics g, int mX, int mY, boolean mClick) {
-        if(activate == 0)
-        {
+
             mouseX = mX;
             mouseY = mY;
             mouseClicked = mClick;
+            if(!mClick)
+                mouseLocked = false;
+            if(mouseLocked)
+                mouseClicked = false;
             
             buttonClicked = 0;
             paint(g);
 
             mouseClicked = false;
-        }
-        else activate--;
     }
     
     public void paint(Graphics g) {
         Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setColor(Color.white);
+        g2d.fillRect(0, 0, 1400, 1000);
         
         int buttonWidth = 300;
         int buttonHeight = 50;
         int buttonX = 700 - buttonWidth / 2;
-        int button1Y = 300;
-        int button2Y = 400;
-        int button3Y = 500;
-        Color gray = Color.gray;
-        Color black = Color.black;
-        Color red = Color.red;
-        
-        int mouseButton = 0;
-        if(mouseX >= buttonX && mouseX < buttonX + buttonWidth) {
-            if(mouseY >= button1Y && mouseY < button1Y + buttonHeight)
-                mouseButton = 1;
-            else if(mouseY >= button2Y && mouseY < button2Y + buttonHeight)
-                mouseButton = 2;
-            else if(mouseY >= button3Y && mouseY < button3Y + buttonHeight)
-                mouseButton = 3;
-            else
-                mouseButton = 0;
+        int buttonY = 250;
+        Color buttonColor = Color.lightGray;
+        Color outlineColor = Color.black;   
+        if(mouseX >= buttonX && mouseX < buttonX + buttonWidth &&
+             mouseY >= buttonY && mouseY < buttonY + buttonHeight) {
+            outlineColor = Color.red;
+            if(mouseClicked)
+                buttonClicked = 1;
         }
-        
-        String button1Str = "Start game";
-        String button2Str = "Armory";
-        String button3Str = "Exit Game";
-        
-        drawButton(g2d, buttonX, button1Y, buttonWidth, buttonHeight, 5, gray, black, black, button1Str);
-        drawButton(g2d, buttonX, button2Y, buttonWidth, buttonHeight, 5, gray, black, black, button2Str);
-        drawButton(g2d, buttonX, button3Y, buttonWidth, buttonHeight, 5, gray, black, black, button3Str);
-        
-        switch(mouseButton) {
-            case 0:
-                break;
-            case 1:
-                drawButton(g2d, buttonX, button1Y, buttonWidth, buttonHeight, 5, gray, red, red, button1Str);
-                if(mouseClicked)
-                    buttonClicked = 1;
-                break;
-            case 2:
-                drawButton(g2d, buttonX, button2Y, buttonWidth, buttonHeight, 5, gray, red, red, button2Str);
-                if(mouseClicked)
-                    buttonClicked = 2;
-                break;
-            case 3:
-                drawButton(g2d, buttonX, button3Y, buttonWidth, buttonHeight, 5, gray, red, red, button3Str);
-               if(mouseClicked)
-                    buttonClicked = 3;
-                break;
+        else
+            outlineColor = Color.black;
+        drawButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 5, buttonColor, outlineColor, outlineColor, "Start game");   
+        buttonY += 100;     
+
+        outlineColor = Color.black;   
+        if(mouseX >= buttonX && mouseX < buttonX + buttonWidth &&
+             mouseY >= buttonY && mouseY < buttonY + buttonHeight) {
+            outlineColor = Color.red;
+            if(mouseClicked)
+                buttonClicked = 2;
         }
+        else
+            outlineColor = Color.black;
+        drawButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 5, buttonColor, outlineColor, outlineColor, "Armory");   
+        buttonY += 100;
         
+        outlineColor = Color.black;   
+        if(mouseX >= buttonX && mouseX < buttonX + buttonWidth &&
+             mouseY >= buttonY && mouseY < buttonY + buttonHeight) {
+            outlineColor = Color.red;
+            if(mouseClicked)
+                buttonClicked = 3;
+        }
+        else
+            outlineColor = Color.black;
+        drawButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 5, buttonColor, outlineColor, outlineColor, "Save selection");   
+        buttonY += 100;
+        
+        outlineColor = Color.black;   
+        if(mouseX >= buttonX && mouseX < buttonX + buttonWidth &&
+             mouseY >= buttonY && mouseY < buttonY + buttonHeight) {
+            outlineColor = Color.red;
+            if(mouseClicked)
+                buttonClicked = 4;
+        }
+        else
+            outlineColor = Color.black;
+        drawButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 5, buttonColor, outlineColor, outlineColor, "Exit");   
+        buttonY += 100;
+
         g2d.dispose();
     }
     

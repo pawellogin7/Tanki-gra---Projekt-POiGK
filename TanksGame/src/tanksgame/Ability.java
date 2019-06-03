@@ -6,7 +6,7 @@ public class Ability {
     private double cooldown, duration, silencedTime;
     private StatusEffects status = new StatusEffects();
     private int tier, cost;
-    private String name;
+    private String name, statusName;
     
     Ability(double dur, double cool) {
         baseDuration = dur;
@@ -114,6 +114,14 @@ public class Ability {
 
     public void setCost(int cost) {
         this.cost = cost;
+    }
+
+    public String getStatusName() {
+        return statusName;
+    }
+
+    public void setStatusName(String statusName) {
+        this.statusName = statusName;
     }
 
     

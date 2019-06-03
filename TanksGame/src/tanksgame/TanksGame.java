@@ -12,16 +12,22 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class TanksGame extends Applet implements Runnable, KeyListener, MouseListener, MouseMotionListener {
 
     private MenuWindow menu;
     private ArmoryWindow armory;
+    private LevelSelectionWindow levelSelection;
+    private SaveSelectionWindow saveSelection;
     private Player player;
     private EnemyTank t1, t2;
-    private Weapon machineGun, shotGun, sniperGun, doubleGun, flameGun, laserGun;
     private Weapon slowingShot, paralyzeShot, jamShot, stunShot, armorBreakShot;
     private Ability speedBoost, sprint, reloadBoost, regenBoost;
     private Image image, character, background, cursor, enemyTank, playerBullet, projectileFire, projectileLaser;
@@ -38,19 +44,12 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     private int currentWindow = 0;
     private boolean currentWindowChanged = false;
     private boolean escKey = false;
+    private int saveSlotSelected = 1;
     
     private Equipment equipment;
-    private int[] tankBodies = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    private int[] primaryWeapons = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    private int[] secondaryWeapons = {0, 1, 0, 0, 0, 0, 0, 0, 0};
-    private int[] abilities = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    private int[] modules = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    private int[] playerEquipped = {1, 1, 0, 0, 1, 1, 1, 0, 0};
-    
-    private Weapon Demise;
     
     @Override
-    public void init() {
+    public void init(){
         setSize(1400, 1000);
         setBackground(Color.BLACK);
         setFocusable(true);
@@ -68,61 +67,25 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
 	}
 
         
-        
 	//Image Setups        
-	character = getImage(base, "../data/playerTank.png");
-        background = getImage(base, "../data/background.png");
-        cursor = getImage(base, "../data/cursor.png");
-        enemyTank = getImage(base, "../data/enemyTank.png");
+	character = getImage(base, "../data/pictures/playerTank.png");
+        cursor = getImage(base, "../data/pictures/cursor.png");
+        enemyTank = getImage(base, "../data/pictures/enemyTank.png");
         playerBullet = getImage(base, "../data/playerBullet.png");
-        projectileFire = getImage(base, "../data/projectileFire.png");
-        projectileLaser = getImage(base, "../data/projectileLaser.png");
+        projectileFire = getImage(base, "../data/pictures/projectileFire.png");
+        projectileLaser = getImage(base, "../data/pictures/projectileLaser.png");
         
+        equipment = new Equipment();
+        loadFile(saveSlotSelected);
+        equipment.update();
         
         menu = new MenuWindow();
         armory = new ArmoryWindow();
-        equipment = new Equipment();
-        for(int i = 0; i < tankBodies.length; i++) {
-            equipment.setTankBodiesTier(i, tankBodies[i]);
-        }
-        for(int i = 0; i < primaryWeapons.length; i++) {
-            equipment.setPrimaryWeaponsTier(i, primaryWeapons[i]);
-        }
-        for(int i = 0; i < secondaryWeapons.length; i++) {
-            equipment.setSecondaryWeaponsTier(i, secondaryWeapons[i]);
-        }
-        for(int i = 0; i < abilities.length; i++) {
-            equipment.setAbilitiesTier(i, abilities[i]);
-        }
-        for(int i = 0; i < modules.length; i++) {
-            equipment.setModulesTier(i, modules[i]);
-        }
-        equipment.setBodyID(playerEquipped[0]);
-        equipment.setPrimary1ID(playerEquipped[1]);
-        equipment.setPrimary2ID(playerEquipped[3]);
-        equipment.setPrimary2ID(playerEquipped[3]);
-        equipment.setSecondaryID(playerEquipped[4]);
-        equipment.setAbilityID(playerEquipped[5]);
-        equipment.setModule1ID(playerEquipped[6]);
-        equipment.setModule1ID(playerEquipped[7]);
-        equipment.setModule1ID(playerEquipped[8]);
+              
         
         
-        //Weapon creation
-        machineGun = new Weapon(50, 0.1, 85, 5, 800, 12, 1);
-        shotGun = new Weapon(15, 0.7, 70, 5, 600, 10, 7);
-        sniperGun = new Weapon(200, 1, 95, 50, 1200, 18, 1);
-        doubleGun = new Weapon(70, 0.15, 90, 10, 350, 20, 2);
-        flameGun = new Weapon(10, 0.1, 30, 5, 200, 20, 16);
-        flameGun.setProjectileType(3);
-        laserGun = new Weapon(10, 0.017, 100, 50, 800, 15, 1);
-        laserGun.setProjectileType(2);
-        Demise = new Weapon(100, 0.051, 25, 100, 1200, 20, 20);
         //Secondaryweapon creation
-        slowingShot = new Weapon(10, 10, 70, 0, 800, 14, 5);
-        slowingShot.getStatus().setSlowed(true);
-        slowingShot.getStatus().setSlowedDuration(5);
-        
+       
         paralyzeShot = new Weapon(10, 10, 100, 0, 800, 16, 1);
         paralyzeShot.getStatus().setParalyzed(true);
         paralyzeShot.getStatus().setParalyzedDuration(3);
@@ -142,9 +105,6 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         armorBreakShot.getStatus().setArmorBrokenDuration(5);
         
         //Ability creation
-        speedBoost = new Ability(5, 10);
-        speedBoost.getStatus().setSpeedy(true);
-        speedBoost.getStatus().setSpeedyDuration(speedBoost.getBaseDuration());
         
         sprint = new Ability(5, 10);
         sprint.getStatus().setSprint(true);
@@ -159,8 +119,9 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         regenBoost = new Ability(8, 10);
         regenBoost.getStatus().setRegenBoost(true);
         regenBoost.getStatus().setRegenBoostDuration(regenBoost.getBaseDuration());
+        
     }
-
+    
     @Override
     public void start() {
         bg1 = new Background(0, 0);
@@ -247,6 +208,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
             case 0: {
                 if(currentWindowChanged) {
                     mouse1Down = false;
+                    saveFile(saveSlotSelected);
                     menu = new MenuWindow();
                     currentWindowChanged = false;
                 }
@@ -255,12 +217,18 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
                     case 0:
                         break;
                     case 1:
-                        currentWindow = 11;
+                        currentWindow = 3;
+                        currentWindowChanged = true;
                         break;
                     case 2:
                         currentWindow = 1;
+                        currentWindowChanged = true;
                         break;
                     case 3:
+                        currentWindow = 2;
+                        currentWindowChanged = true;
+                        break;
+                    case 4:
                         destroy();
                 }
                 if(escKey) {
@@ -277,7 +245,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
                 }
                 equipment.update();
                 armory.setEq(equipment);
-                armory.update(g, mouseX, mouseY, mouse1Down, !mouse1Down, equipment);
+                armory.update(g, mouseX, mouseY, mouse1Down, equipment);
                 equipment = armory.getEq();
                 player = new Player(equipment);
                 
@@ -286,20 +254,74 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
                         break;
                     case 1:
                         currentWindow = 0;
+                        currentWindowChanged = true;
                         break;
                 }
                 if(escKey) {
                     currentWindow = 0;
                     escKey = false;
+                    currentWindowChanged = true;
                 }
                 break;
             }
-            
+            case 2: {
+                if(currentWindowChanged) {
+                    saveSelection = new SaveSelectionWindow(saveSlotSelected);
+                    currentWindowChanged = false;
+                }
+                saveSelection.update(g, mouseX, mouseY, mouse1Down);
+                saveSlotSelected = saveSelection.getSaveSlotSelected();
+                    
+                
+                switch(saveSelection.getButtonClicked()) {
+                    case 0:
+                        break;
+                    case 1:
+                        loadFile(saveSlotSelected);
+                        currentWindow = 0;
+                        currentWindowChanged = true;
+                        break;
+                }
+                if(escKey) {
+                    loadFile(saveSlotSelected);
+                    currentWindow = 0;
+                    escKey = false;
+                    currentWindowChanged = true;
+                }
+                break;
+            }
+            case 3: {
+                if(currentWindowChanged) {
+                    levelSelection = new LevelSelectionWindow();
+                    levelSelection.setLevelCompleted(equipment.getLevelCompleted());
+                    currentWindowChanged = false;
+                }
+                levelSelection.update(g, mouseX, mouseY, mouse1Down);
+                switch(levelSelection.getButtonClicked()) {
+                    case 0:
+                        break;
+                    case 1:
+                        currentWindow = 11;
+                        currentWindowChanged = true;
+                        break;
+                }
+                if(escKey) {
+                    currentWindow = 0;
+                    escKey = false;
+                    currentWindowChanged = true;
+                }
+                break;
+            }
             case 11: {
+                if(currentWindowChanged) {
+                    player = new Player(equipment);
+                    currentWindowChanged = false;
+                }
                 drawLevel1(g);
                 if(escKey) {
                     currentWindow = 0;
                     escKey = false;
+                    currentWindowChanged = true;
                 }
                 break;
             }
@@ -324,25 +346,133 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
             Projectile p = (Projectile) projectiles.get(i);
             drawProjectile(p, g);
         }
-        //g.setFont(new Font("Arial",Font.BOLD,20));
-        //g.drawString("Mouse x: " + mouseX, 5, 140);
-        //g.drawString("Mouse y: "+ mouseY, 5, 170);
         
-        int hudX = 320;
+        Color tierColor = Color.lightGray;
+        int hudX = 370;
         int hudY = 890;
         int hudSize = 2;
         int percent = player.getAbility().getPercent();
-        drawHud(hudX, hudY, hudSize, percent, g); //ability hud
+        if(player.isAbilityChosen()) {
+            switch(player.getAbility().getTier()) {
+                case 0:
+                    tierColor = Color.lightGray;
+                    break;
+                case 1:
+                    tierColor = Color.green;
+                    break;
+                case 2:
+                    tierColor = Color.blue;
+                    break;
+                case 3:
+                    tierColor = Color.magenta;
+                    break;
+                case 4:
+                    tierColor = Color.orange;
+                    break;
+            }
+            drawHud(hudX, hudY, hudSize, percent, g, tierColor); //ability hud
+        }
         
-        hudX = 380;
-        percent = player.getSecondaryWeapon().getPercent();
-        drawHud(hudX, hudY, hudSize, percent, g); //secondary weapon hud
+        hudX = 430;
+        if(player.isSecondaryChosen()) {
+            percent = player.getSecondaryWeapon().getPercent();
+            switch(player.getSecondaryWeapon().getTier()) {
+                case 0:
+                    tierColor = Color.lightGray;
+                    break;
+                case 1:
+                    tierColor = Color.green;
+                    break;
+                case 2:
+                    tierColor = Color.blue;
+                    break;
+                case 3:
+                    tierColor = Color.magenta;
+                    break;
+                case 4:
+                    tierColor = Color.orange;
+                    break;
+            }
+            drawHud(hudX, hudY, hudSize, percent, g, tierColor); //secondary weapon hud
+        }
         
-        hudX = 440;
-        percent = player.getPrimaryWeapon().getPercent();
-        drawHud(hudX, hudY, hudSize, percent, g); //primary weapon hud
         
-        drawPlayerHP(500, 908, 400, 20, g);
+        //primary weapons hud
+        hudX = 920;
+        switch(player.getPrimaryWeapon1().getTier()) {
+            case 0:
+                tierColor = Color.lightGray;
+                break;
+            case 1:
+                tierColor = Color.green;
+                break;
+            case 2:
+                tierColor = Color.blue;
+                break;
+            case 3:
+                tierColor = Color.magenta;
+                break;
+            case 4:
+                tierColor = Color.orange;
+                break;
+        }
+        if(player.getActiveWeapon() == 1)
+            drawHud(hudX, hudY, hudSize, 100, g, tierColor);
+        else
+            drawHud(hudX, hudY, hudSize, 0, g, tierColor);
+        
+        if(player.getWeaponsNumber() >= 2) {
+            hudX += 60;
+            switch(player.getPrimaryWeapon2().getTier()) {
+                case 0:
+                    tierColor = Color.lightGray;
+                    break;
+                case 1:
+                    tierColor = Color.green;
+                    break;
+                case 2:
+                    tierColor = Color.blue;
+                    break;
+                case 3:
+                    tierColor = Color.magenta;
+                    break;
+                case 4:
+                    tierColor = Color.orange;
+                    break;
+            }
+            if(player.getActiveWeapon() == 2)
+                drawHud(hudX, hudY, hudSize, 100, g, tierColor);
+            else
+                drawHud(hudX, hudY, hudSize, 0, g, tierColor);
+        }
+        
+        if(player.getWeaponsNumber() >= 3) {
+            hudX += 60;
+            switch(player.getPrimaryWeapon3().getTier()) {
+                case 0:
+                    tierColor = Color.lightGray;
+                    break;
+                case 1:
+                    tierColor = Color.green;
+                    break;
+                case 2:
+                    tierColor = Color.blue;
+                    break;
+                case 3:
+                    tierColor = Color.magenta;
+                    break;
+                case 4:
+                    tierColor = Color.orange;
+                    break;
+            }
+            if(player.getActiveWeapon() == 3)
+                drawHud(hudX, hudY, hudSize, 100, g, tierColor);
+            else
+                drawHud(hudX, hudY, hudSize, 0, g, tierColor);
+        }
+        
+        
+        drawPlayerHP(500, 903, 400, 30, g);
     }
     
     public void drawProjectile(Projectile p, Graphics g) {
@@ -363,7 +493,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         }
     }
 
-    public void drawHud(int hudX, int hudY, int hudSize, int hudPercent, Graphics g) {
+    public void drawHud(int hudX, int hudY, int hudSize, int hudPercent, Graphics g, Color tierColor) {
         int size = 26 * hudSize;
         int lineSize = 2 * hudSize;
         int startPoint = hudX + size / 2;
@@ -372,8 +502,14 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         int pointyUp = hudY + hudSize;
         int pointyDown = hudY + 26 * hudSize - lineSize / 2;
         
-        g.setColor(Color.gray);
+        g.setColor(tierColor);
         g.fillRect(pointxLeft, pointyUp, size, size);
+        g.setColor(Color.black);
+        g.fillRect(pointxLeft, pointyUp, 26 * hudSize, lineSize);
+        g.fillRect(pointxRight, pointyUp, lineSize, 26 * hudSize);
+        g.fillRect(pointxLeft, pointyDown, 26 * hudSize, lineSize);
+        g.fillRect(pointxLeft, pointyUp, lineSize, 26 * hudSize);
+        
         g.setColor(Color.red);
         if(hudPercent <= 13) {
             g.fillRect(startPoint, pointyUp, hudPercent * hudSize, lineSize);
@@ -405,20 +541,23 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
             g.fillRect(pointxLeft, pointyUp, hudPercent * hudSize + hudSize , lineSize);
         }
     }
-    
+       
     public void drawPlayerHP(int startX, int startY, int width, int heigth, Graphics g) {
         g.setColor(Color.black);
-        g.fillRect(startX - 3, startY - 3, width + 6, heigth + 6);
-        g.setColor(Color.red);
+        g.fillRect(startX - 5, startY - 5, width + 10, heigth + 10);
+        g.setColor(Color.darkGray);
         g.fillRect(startX, startY, width, heigth);
-        g.setColor(Color.green);
-        g.fillRect(startX, startY, width * player.getHpPercent() / 100, heigth);
+        int percent =  player.getHpPercent(); 
+        g.setColor(new Color((int) (2.55 * (100 - percent)), 255 - (int) (2.55 * (100 - percent)), 0));
+        g.fillRect(startX, startY, width * percent / 100, heigth);
     }
     
+    @Override
     public void keyTyped(KeyEvent e) {
         
     }
 
+    @Override
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_W:
@@ -448,15 +587,19 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
             case KeyEvent.VK_3:
                 player.changeWeapon(3);
             break;
+            
             case KeyEvent.VK_SPACE:
                 player.useAbility();
             break;
+            
             case KeyEvent.VK_ESCAPE:
                 escKey = true;
             break;
+            
         }
     }
 
+    @Override
     public void keyReleased(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_W:
@@ -480,48 +623,290 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         }
     }
     
+    @Override
     public void mousePressed(MouseEvent e) {
-        if(e.getButton() == e.BUTTON1) {
+        if(e.getButton() == MouseEvent.BUTTON1) {
             mouse1Down = true;
         }
-        else if(e.getButton() == e.BUTTON3) {
+        else if(e.getButton() == MouseEvent.BUTTON3) {
             mouse2Down = true;
         }
     }
+    @Override
     public void mouseReleased(MouseEvent e) {
-        if(e.getButton() == e.BUTTON1) {
+        if(e.getButton() == MouseEvent.BUTTON1) {
             mouse1Down = false;
         }
-        else if(e.getButton() == e.BUTTON3) {
+        else if(e.getButton() == MouseEvent.BUTTON3) {
             mouse2Down = false;
         }
     }
     
+    @Override
     public void mouseEntered(MouseEvent e){
         mouseX = e.getX() + 16;
         mouseY = e.getY() + 16;
     }
     
+    @Override
     public void mouseClicked(MouseEvent e){}
     
+    @Override
     public void mouseMoved(MouseEvent e) {
         mouseX = e.getX() + 16;
         mouseY = e.getY() + 16;
     }
     
+    @Override
     public void mouseExited(MouseEvent e){}
     
+    @Override
     public void mouseDragged(MouseEvent e){
         mouseX = e.getX() + 16;
         mouseY = e.getY() + 16;
-        if(e.getButton() == e.BUTTON1) {
+        if(e.getButton() == MouseEvent.BUTTON1) {
             mouse1Down = true;
         }
-        else if(e.getButton() == e.BUTTON3) {
+        else if(e.getButton() == MouseEvent.BUTTON3) {
             mouse2Down = true;
         }
     }
     
+    public void loadFile(int savefileID) {
+        String savefilePath = "";
+        boolean fileInvalid = false;
+        switch(savefileID) {
+            case 1:
+                savefilePath = "data/savefiles/savefile1.txt";
+                break;
+            case 2:
+                savefilePath = "data/savefiles/savefile2.txt";
+                break;
+            case 3:
+                savefilePath = "data/savefiles/savefile3.txt";
+                break;
+        }
+        try {
+            File file = new File(savefilePath);
+            Scanner in = new Scanner(file);
+            String line = in.nextLine();
+            int levelCompleted = Integer.parseInt(line);
+            if(levelCompleted >= 0 && levelCompleted <= 15)
+                equipment.setLevelCompleted(levelCompleted);
+            else
+                fileInvalid = true;
+            line = in.nextLine();
+            int money = Integer.parseInt(line);
+            if(money >= 0 && money <= 999999)
+                equipment.setMoney(money);
+            else
+                fileInvalid = true;
+            
+            line = in.nextLine();
+            for(int i = 0; i < line.length(); i++) {
+                int value = Character.getNumericValue(line.charAt(i));
+                if(value >= 0 && value <= 4)
+                    equipment.setTankBodiesTier(i, value);
+                else {
+                    fileInvalid = true;
+                    break;
+                }      
+            }
+            line = in.nextLine();
+            for(int i = 0; i < line.length(); i++) {
+                int value = Character.getNumericValue(line.charAt(i));
+                if(value >= 0 && value <= 4)
+                    equipment.setPrimaryWeaponsTier(i, value);
+                else {
+                    fileInvalid = true;
+                    break;
+                }      
+            }
+            line = in.nextLine();
+            for(int i = 0; i < line.length(); i++) {
+                int value = Character.getNumericValue(line.charAt(i));
+                if(value >= 0 && value <= 4)
+                    equipment.setSecondaryWeaponsTier(i, value);
+                else {
+                    fileInvalid = true;
+                    break;
+                }      
+            }
+            line = in.nextLine();
+            for(int i = 0; i < line.length(); i++) {
+                int value = Character.getNumericValue(line.charAt(i));
+                if(value >= 0 && value <= 4)
+                    equipment.setAbilitiesTier(i, value);
+                else {
+                    fileInvalid = true;
+                    break;
+                }      
+            }
+            line = in.nextLine();
+            for(int i = 0; i < line.length(); i++) {
+                int value = Character.getNumericValue(line.charAt(i));
+                if(value >= 0 && value <= 4)
+                    equipment.setModulesTier(i, value);
+                else {
+                    fileInvalid = true;
+                    break;
+                }      
+            }
+            
+            for(int j = 1; j <= 3; j++) {
+                line = in.nextLine();
+                if(line.length() == 18) {
+                    for(int i = 0; i < line.length() / 2 - 1; i++) {
+                        int value = 10 * Character.getNumericValue(line.charAt(2 * i)) + Character.getNumericValue(line.charAt(2 * i + 1));
+                        if((i == 0 || i == 1) && value == 0)
+                            value = 1;
+                        if(value >= 0 && value <= 21) {
+                            switch(j) {
+                                case 1:
+                                    equipment.setTankSlot1(i, value);
+                                    break;
+                                case 2:
+                                    equipment.setTankSlot2(i, value);
+                                    break;
+                                case 3:
+                                    equipment.setTankSlot3(i, value);
+                                    break;
+                            }
+                        }
+                        else {
+                            fileInvalid = true;
+                            break;
+                        }      
+                    }
+                }
+                else {
+                    fileInvalid = true;
+                    break;
+                }
+            }
+            
+            if(fileInvalid){
+                file.delete();
+                try{ 
+                  file.createNewFile();  
+                }
+                catch (IOException exc){
+                } 
+            }
+            
+            in.close();
+        }
+        catch (FileNotFoundException ex) {
+            File file = new File(savefilePath);
+            try{ 
+                file.createNewFile();
+                fileInvalid = true;
+            }
+            catch (IOException exc){
+            }
+        }
+        
+        if(fileInvalid) {
+            try {
+                File file = new File(savefilePath);
+                PrintWriter writer = new PrintWriter(file);
+                writer.println("0");
+                writer.println("10000");
+                writer.println("01000000000");
+                writer.println("010000000000000000000");
+                writer.println("00000000000");
+                writer.println("0000000000000000");
+                writer.println("000000000000000000000");
+                writer.println("010100000000000000");
+                writer.println("010100000000000000");
+                writer.println("010100000000000000");
+                writer.close();
+                loadFile(saveSlotSelected);
+            }
+            catch (FileNotFoundException ex){   
+            }
+        }
+    }
+    
+    public void saveFile(int savefileID) {
+        String savefilePath = "";
+        switch(savefileID) {
+            case 1:
+                savefilePath = "data/savefiles/savefile1.txt";
+                break;
+            case 2:
+                savefilePath = "data/savefiles/savefile2.txt";
+                break;
+            case 3:
+                savefilePath = "data/savefiles/savefile3.txt";
+                break;
+        }
+        
+        File file = new File(savefilePath);
+        file.delete();  
+            
+        try {
+            file.createNewFile();
+            PrintWriter writer = new PrintWriter(file);
+            String textline = "";
+            textline = Integer.toString(equipment.getLevelCompleted());
+            writer.println(textline);
+            textline = Integer.toString(equipment.getMoney());
+            writer.println(textline);
+            textline = "";
+            for(int i = 0; i < equipment.getTankBodiesTier().length; i++) {
+                textline += Integer.toString(equipment.getTankBodiesTier()[i]);
+            }
+            writer.println(textline);
+            textline = "";
+            for(int i = 0; i < equipment.getPrimaryWeaponsTier().length; i++) {
+                textline += Integer.toString(equipment.getPrimaryWeaponsTier()[i]);
+            }
+            writer.println(textline);
+            textline = "";
+            for(int i = 0; i < equipment.getSecondaryWeaponsTier().length; i++) {
+                textline += Integer.toString(equipment.getSecondaryWeaponsTier()[i]);
+            }
+            writer.println(textline);
+            textline = "";
+            for(int i = 0; i < equipment.getAbilitiesTier().length; i++) {
+                textline += Integer.toString(equipment.getAbilitiesTier()[i]);
+            }
+            writer.println(textline);
+            textline = "";
+            for(int i = 0; i < equipment.getModulesTier().length; i++) {
+                textline += Integer.toString(equipment.getModulesTier()[i]);
+            }
+            writer.println(textline);
+            
+            for(int j = 1; j <= 3; j++) {
+                textline = "";
+                for(int i = 0; i < 9; i++) {
+                    int value = 0;
+                    switch(j) {
+                        case 1:
+                            value = equipment.getTankSlot1()[i];
+                            break;
+                        case 2:
+                            value = equipment.getTankSlot2()[i];
+                            break;
+                        case 3:
+                            value = equipment.getTankSlot3()[i];
+                            break;   
+                    }
+                    if(value <= 9)
+                       textline += "0" + Integer.toString(value);
+                    else
+                       textline += Integer.toString(value); 
+                }
+                writer.println(textline);
+            }
+            
+            writer.close();
+        }
+        catch (IOException ex){
+        }
+    }
     
     public static Background getBg1() {
         return bg1;

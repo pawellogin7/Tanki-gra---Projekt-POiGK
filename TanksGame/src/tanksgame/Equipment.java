@@ -15,17 +15,19 @@ public class Equipment {
    private ArrayList<Module> modules;
    private int[] modulesTier;
    
+   private int[] tankSlot1;
+   private int[] tankSlot2;
+   private int[] tankSlot3;
+   
    private int money;
+   private int levelCompleted;
    
    private TankBody nullBody = new TankBody(1, 1, 1, 1, 1, 1);
    private Weapon nullWeapon = new Weapon(1, 1, 1, 1, 1, 1, 0);
    private Ability nullAbility = new Ability(1, 1);
    private Module nullModule = new Module(0, 0, 0, 0, 0, 0);
-   private int bodyID, primary1ID, primary2ID, primary3ID, secondaryID, abilityID, module1ID, module2ID, module3ID;
    
-   Equipment() {
-        money = 30000;
-        
+   Equipment() {       
         tankBodiesTier = new int[11];
         nullBody.setName("Null Weapon");
         nullBody.setTier(0);
@@ -64,7 +66,16 @@ public class Equipment {
             modules.add(nullModule);
         }
         
-       update();
+        tankSlot1 = new int[9];
+        tankSlot2 = new int[9];
+        tankSlot3 = new int[9];
+        for(int i = 0; i < 9; i++) {
+            tankSlot1[i] = 0;
+            tankSlot2[i] = 0;
+            tankSlot3[i] = 0;
+        }
+        
+        update();
    }
    
    public void update() {
@@ -239,28 +250,34 @@ public class Equipment {
         int i = 1;
         switch(secondaryWeaponsTier[i]) {
             case 0:
-                addSecondaryWeapon(new Weapon(10, 10, 70, 0, 800, 14, 5), i, "Slowing shot", 0, 2000, 0);
+                addSecondaryWeapon(new Weapon(10, 10, 70, 0, 800, 14, 5), i, "Slowing shot", 2, "Slowed", 0, 2000, 0);
                 break;  
             case 1:
-                addSecondaryWeapon(new Weapon(10, 10, 70, 0, 800, 14, 5), i, "Slowing shot", 1, 2000, 0);
+                addSecondaryWeapon(new Weapon(10, 10, 70, 0, 800, 14, 5), i, "Slowing shot", 3, "Slowed", 1, 2000, 0);
                 break;
             case 2:
-                addSecondaryWeapon(new Weapon(10, 10, 70, 0, 800, 14, 5), i, "Slowing shot", 2, 2000, 0);
+                addSecondaryWeapon(new Weapon(10, 10, 70, 0, 800, 14, 5), i, "Slowing shot", 4, "Slowed", 2, 2000, 0);
                 break;  
             case 3:
-                addSecondaryWeapon(new Weapon(10, 10, 70, 0, 800, 14, 5), i, "Slowing shot", 3, 2000, 0);
+                addSecondaryWeapon(new Weapon(10, 10, 70, 0, 800, 14, 5), i, "Slowing shot", 5, "Slowed", 3, 2000, 0);
                 break;
             case 4:
-                addSecondaryWeapon(new Weapon(10, 10, 70, 0, 800, 14, 5), i, "Slowing shot", 4, 2000, 0);
+                addSecondaryWeapon(new Weapon(10, 10, 70, 0, 800, 14, 5), i, "Slowing shot", 6, "Slowed", 4, 2000, 0);
                 break;
+            
         }
+        secondaryWeapons.get(i).getStatus().setSlowed(true);
+        secondaryWeapons.get(i).getStatus().setSlowedDuration(secondaryWeapons.get(i).getStatusDuration());
+        
         i++;
     }
     
-    private void addSecondaryWeapon(Weapon weapon, int id, String name, int tier, int cost, int projType) {
+    private void addSecondaryWeapon(Weapon weapon, int id, String name, double duration, String statusName, int tier, int cost, int projType) {
         weapon.setTier(tier);
         weapon.setName(name);
         weapon.setCost(cost);
+        weapon.setStatusName(statusName);
+        weapon.setStatusDuration(duration);
         weapon.setProjectileType(projType);
         secondaryWeapons.set(id, weapon);
 
@@ -270,27 +287,30 @@ public class Equipment {
         int i = 1;
         switch(abilitiesTier[i]) {
             case 0:
-                addAbility(new Ability(5, 10), i, "Speed boost", 0, 2000);
+                addAbility(new Ability(3, 14), i, "Speed boost", "Speed boost", 0, 2000);
                 break;  
             case 1:
-                addAbility(new Ability(5, 10), i, "Speed boost", 1, 2000);
+                addAbility(new Ability(3, 14), i, "Speed boost", "Speed boost", 1, 2000);
                 break;
             case 2:
-                addAbility(new Ability(5, 10), i, "Speed boost", 2, 2000);
+                addAbility(new Ability(4, 14), i, "Speed boost", "Speed boost", 2, 2000);
                 break;  
             case 3:
-                addAbility(new Ability(5, 10), i, "Speed boost", 3, 2000);
+                addAbility(new Ability(5, 14), i, "Speed boost", "Speed boost", 3, 2000);
                 break;
             case 4:
-                addAbility(new Ability(5, 10), i, "Speed boost", 4, 2000);
+                addAbility(new Ability(6, 10), i, "Speed boost", "Speed boost", 4, 2000);
                 break;
         }
+        abilities.get(i).getStatus().setSpeedy(true);
+        abilities.get(i).getStatus().setSpeedyDuration(abilities.get(i).getDuration());
         i++;
     }
     
-    private void addAbility(Ability ability, int id, String name, int tier, int cost) {
+    private void addAbility(Ability ability, int id, String name, String statusName, int tier, int cost) {
         ability.setTier(tier);
         ability.setName(name);
+        ability.setStatusName(statusName);
         ability.setCost(cost);
         abilities.set(id, ability);
 
@@ -413,82 +433,37 @@ public class Equipment {
         this.modulesTier[index] = value;
     }
 
-    public int getBodyID() {
-        return bodyID;
+    public int getLevelCompleted() {
+        return levelCompleted;
     }
 
-    public void setBodyID(int bodyID) {
-        this.bodyID = bodyID;
+    public void setLevelCompleted(int levelCompleted) {
+        this.levelCompleted = levelCompleted;
     }
 
-    public int getPrimary1ID() {
-        return primary1ID;
+    public int[] getTankSlot1() {
+        return tankSlot1;
     }
 
-    public void setPrimary1ID(int primary1ID) {
-        this.primary1ID = primary1ID;
+    public void setTankSlot1(int index, int value) {
+        this.tankSlot1[index] = value;
     }
 
-    public int getPrimary2ID() {
-        return primary2ID;
+    public int[] getTankSlot2() {
+        return tankSlot2;
     }
 
-    public void setPrimary2ID(int primary2ID) {
-        this.primary2ID = primary2ID;
+    public void setTankSlot2(int index, int value) {
+       this.tankSlot2[index] = value;
     }
 
-    public int getPrimary3ID() {
-        return primary3ID;
+    public int[] getTankSlot3() {
+        return tankSlot3;
     }
 
-    public void setPrimary3ID(int primary3ID) {
-        this.primary3ID = primary3ID;
+    public void setTankSlot3(int index, int value) {
+        this.tankSlot3[index] = value;
     }
 
-    public int getSecondaryID() {
-        return secondaryID;
-    }
-
-    public void setSecondaryID(int secondaryID) {
-        this.secondaryID = secondaryID;
-    }
-
-    public int getAbilityID() {
-        return abilityID;
-    }
-
-    public void setAbilityID(int abilityID) {
-        this.abilityID = abilityID;
-    }
-
-    public int getModule1ID() {
-        return module1ID;
-    }
-
-    public void setModule1ID(int module1ID) {
-        this.module1ID = module1ID;
-    }
-
-    public int getModule2ID() {
-        return module2ID;
-    }
-
-    public void setModule2ID(int module2ID) {
-        this.module2ID = module2ID;
-    }
-    
-    public int getModule3ID() {
-        return module3ID;
-    }
-
-    public void setModule3ID(int module3ID) {
-        this.module3ID = module3ID;
-    }
-   
-    
-   
-   
-   
-   
    
 }

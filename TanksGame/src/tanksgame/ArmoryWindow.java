@@ -12,81 +12,107 @@ public class ArmoryWindow{
     private int mouseY;
     boolean mouseClicked, mouseLocked;
     private int buttonClicked;
-    private int activeTank;
+    private int activeTankSlot;
     private int activeTab;
     private int activeComponent;
     private int componentNumber;
     private int primaryWeaponNumber;
     private int moduleNumber;
-    
+    private int[] tankEq;
     
     private Equipment eq;
-    
-    int activate;
+
     
     ArmoryWindow() {
-        activeTank = 1;
+        activeTankSlot = 1;
         activeTab = 1;
         activeComponent = 0;
         componentNumber = 20;
         primaryWeaponNumber = 1;
         moduleNumber = 1;
-        mouseLocked = false;
-        
-        activeTab = 1;
-        activate = 6;
+        mouseLocked = true;
+        tankEq = new int[9];
     }
     
-    public void update(Graphics g, int mX, int mY, boolean mClick, boolean mouseUp, Equipment equipment) {
-        if(activate == 0)
-        {
+    public void update(Graphics g, int mX, int mY, boolean mClick, Equipment equipment) {
             mouseX = mX;
             mouseY = mY;
             mouseClicked = mClick;
-            if(mouseUp)
+            if(!mClick)
                 mouseLocked = false;
             if(mouseLocked)
                 mouseClicked = false;
             buttonClicked = 0;
             eq = equipment;
-            primaryWeaponNumber = eq.getTankBodies().get(eq.getBodyID()).getPrimaryWeaponSlots();
-            moduleNumber = eq.getTankBodies().get(eq.getBodyID()).getModuleSlots();
+            
+            //Load current tank slot items to window
+            switch(activeTankSlot) {
+                case 1:
+                    tankEq = eq.getTankSlot1();
+                    break;
+                case 2:
+                    tankEq = eq.getTankSlot2();
+                    break;
+                case 3:
+                    tankEq = eq.getTankSlot3();
+                    break;
+            }
+            
+            
+            
+            primaryWeaponNumber = eq.getTankBodies().get(tankEq[0]).getPrimaryWeaponSlots();
+            moduleNumber = eq.getTankBodies().get(tankEq[0]).getModuleSlots();
 
             switch(activeTab) {
                 case 1:
                     componentNumber = eq.getTankBodiesTier().length - 1;
+                    if(activeComponent == 0)
+                        activeComponent = tankEq[0];
                     break;
                 case 2:
                     componentNumber = eq.getPrimaryWeaponsTier().length - 1;
+                    if(activeComponent == 0)
+                        activeComponent = tankEq[1];
                     break;
                 case 3:
                     componentNumber = eq.getPrimaryWeaponsTier().length - 1;
+                    if(activeComponent == 0)
+                        activeComponent = tankEq[2];
                     break;
                 case 4:
                     componentNumber = eq.getPrimaryWeaponsTier().length - 1;
+                    if(activeComponent == 0)
+                        activeComponent = tankEq[3];
                     break;
                 case 5:
                     componentNumber = eq.getSecondaryWeaponsTier().length - 1;
+                    if(activeComponent == 0)
+                        activeComponent = tankEq[4];
                     break;
                 case 6:
                     componentNumber = eq.getAbilitiesTier().length - 1;
+                    if(activeComponent == 0)
+                        activeComponent = tankEq[5];
                     break;
                 case 7:
                     componentNumber = eq.getModulesTier().length - 1;
+                    if(activeComponent == 0)
+                        activeComponent = tankEq[6];
                     break;
                 case 8:
                     componentNumber = eq.getModulesTier().length - 1;
+                    if(activeComponent == 0)
+                        activeComponent = tankEq[7];
                     break;
                 case 9:
                     componentNumber = eq.getModulesTier().length - 1;
+                    if(activeComponent == 0)
+                        activeComponent = tankEq[8];
                     break;
             }
             paint(g);
 
-            mouseClicked = false;
-        }
-        else
-            activate--;
+            mouseClicked = false;    
     }
     
     public void paint(Graphics g) {
@@ -98,11 +124,35 @@ public class ArmoryWindow{
         g2d.fillRect(295, 150, 5, 1000);
         g2d.fillRect(1095, 150, 5, 1000);
         
-        drawTanks(g2d);
+        
         drawComponents(g2d);
         drawTabs(g2d);
         if(activeComponent != 0)
             drawStats(g2d);
+        
+        //Saving chosen items to current slot
+        //Has to be done before drawTanks
+        switch(activeTankSlot) {
+                case 1:
+                    for(int i = 0; i < 9; i++)
+                        eq.setTankSlot1(i, tankEq[i]);
+                    break;
+                case 2:
+                    for(int i = 0; i < 9; i++)
+                        eq.setTankSlot2(i, tankEq[i]);
+                    break;
+                case 3:
+                    for(int i = 0; i < 9; i++)
+                        eq.setTankSlot3(i, tankEq[i]);
+                    break;
+        }
+        
+        drawTanks(g2d);
+        //Money string
+        Font font1 = new Font("Arial", Font.BOLD, 28 );
+        g2d.setFont(font1);
+        g2d.setColor(Color.yellow);
+        g2d.drawString("Money: " + Integer.toString(eq.getMoney()) + "$", 1120, 900);
         
         g2d.dispose();
         }
@@ -110,18 +160,56 @@ public class ArmoryWindow{
         private void drawTanks(Graphics2D g2d) {
             
             
-            int buttonX = 1250;
-            int buttonY = 50;
-            int buttonWidth = 100;
-            int buttonHeight = 50;
+            int buttonX = 100;
+            int buttonY = 30;
+            int buttonWidth = 200;
+            int buttonHeight = 80;
             Color outlineColor = Color.black;
+            if(activeTankSlot == 1)
+               outlineColor = Color.red; 
+            if(mouseX >= buttonX && mouseX < buttonX + buttonWidth
+                && mouseY >= buttonY && mouseY < buttonY + buttonHeight) {
+                outlineColor = Color.yellow;
+                if(mouseClicked) 
+                    activeTankSlot = 1;
+            }
+            drawTextButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 4, Color.lightGray, outlineColor, outlineColor, "Tank 1");
+            
+            buttonX += 350;
+            outlineColor = Color.black;
+            if(activeTankSlot == 2)
+               outlineColor = Color.red; 
+            if(mouseX >= buttonX && mouseX < buttonX + buttonWidth
+                && mouseY >= buttonY && mouseY < buttonY + buttonHeight) {
+                outlineColor = Color.yellow;
+                if(mouseClicked) 
+                    activeTankSlot = 2;
+            }
+            drawTextButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 4, Color.lightGray, outlineColor, outlineColor, "Tank 2");
+            
+            buttonX += 350;
+            outlineColor = Color.black;
+            if(activeTankSlot == 3)
+               outlineColor = Color.red; 
+            if(mouseX >= buttonX && mouseX < buttonX + buttonWidth
+                && mouseY >= buttonY && mouseY < buttonY + buttonHeight) {
+                outlineColor = Color.yellow;
+                if(mouseClicked) 
+                    activeTankSlot = 3;
+            }
+            drawTextButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 4, Color.lightGray, outlineColor, outlineColor, "Tank 3");
+            
+            buttonX = 1200;
+            buttonY = 50;
+            buttonWidth = 100;
+            buttonHeight = 50;
+            outlineColor = Color.black;
             if(mouseX >= buttonX && mouseX < buttonX + buttonWidth
                 && mouseY >= buttonY && mouseY < buttonY + buttonHeight) {
                 outlineColor = Color.yellow;
                 if(mouseClicked)
                     buttonClicked = 1;
-            }
-                
+            }  
             drawButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 3, Color.red, outlineColor);
         }
     
@@ -240,10 +328,10 @@ public class ArmoryWindow{
                     outlineColor = Color.yellow;
                 }   
             }
-            if(eq.getBodyID() == 0)
+            if(tankEq[0] == 0)
                 tierColor = Color.lightGray;
             else {
-                switch(eq.getTankBodies().get(eq.getBodyID()).getTier()) {
+                switch(eq.getTankBodies().get(tankEq[0]).getTier()) {
                         case 0:
                             tierColor = Color.lightGray;
                             break;
@@ -289,22 +377,22 @@ public class ArmoryWindow{
                 int weaponTier = 0;
                 switch(i) {
                     case 1:
-                        if(eq.getPrimary1ID() == 0)
+                        if(tankEq[1] == 0)
                             weaponTier = 0;
                         else
-                            weaponTier = eq.getPrimaryWeapons().get(eq.getPrimary1ID()).getTier();
+                            weaponTier = eq.getPrimaryWeapons().get(tankEq[1]).getTier();
                         break;
                     case 2:
-                        if(eq.getPrimary2ID() == 0)
+                        if(tankEq[2] == 0)
                             weaponTier = 0;
                         else
-                            weaponTier = eq.getPrimaryWeapons().get(eq.getPrimary2ID()).getTier();
+                            weaponTier = eq.getPrimaryWeapons().get(tankEq[2]).getTier();
                         break;
                     case 3:
-                        if(eq.getPrimary3ID() == 0)
+                        if(tankEq[3] == 0)
                             weaponTier = 0;
                         else
-                            weaponTier = eq.getPrimaryWeapons().get(eq.getPrimary3ID()).getTier();
+                            weaponTier = eq.getPrimaryWeapons().get(tankEq[3]).getTier();
                         break;
                 }
                 switch(weaponTier) {
@@ -346,10 +434,10 @@ public class ArmoryWindow{
                     outlineColor = Color.yellow;
                 }   
             }
-            if(eq.getSecondaryID() == 0)
+            if(tankEq[4] == 0)
                 tierColor = Color.lightGray;
             else {
-                switch(eq.getSecondaryWeapons().get(eq.getSecondaryID()).getTier()) {
+                switch(eq.getSecondaryWeapons().get(tankEq[4]).getTier()) {
                         case 0:
                             tierColor = Color.lightGray;
                             break;
@@ -387,10 +475,10 @@ public class ArmoryWindow{
                     outlineColor = Color.yellow;
                 }   
             }
-            if(eq.getAbilityID() == 0)
+            if(tankEq[5] == 0)
                 tierColor = Color.lightGray;
             else {
-                switch(eq.getAbilities().get(eq.getAbilityID()).getTier()) {
+                switch(eq.getAbilities().get(tankEq[5]).getTier()) {
                         case 0:
                             tierColor = Color.lightGray;
                             break;
@@ -434,22 +522,22 @@ public class ArmoryWindow{
                 int moduleTier = 0;
                 switch(i) {
                     case 1:
-                        if(eq.getModule1ID() == 0)
+                        if(tankEq[6] == 0)
                             moduleTier = 0;
                         else
-                            moduleTier = eq.getModules().get(eq.getModule1ID()).getTier();
+                            moduleTier = eq.getModules().get(tankEq[6]).getTier();
                         break;
                     case 2:
-                        if(eq.getModule2ID() == 0)
+                        if(tankEq[7] == 0)
                             moduleTier = 0;
                         else
-                            moduleTier = eq.getModules().get(eq.getModule2ID()).getTier();
+                            moduleTier = eq.getModules().get(tankEq[7]).getTier();
                         break;
                     case 3:
-                        if(eq.getModule3ID() == 0)
+                        if(tankEq[8] == 0)
                             moduleTier = 0;
                         else
-                            moduleTier = eq.getModules().get(eq.getModule3ID()).getTier();
+                            moduleTier = eq.getModules().get(tankEq[8]).getTier();
                         break;
                 }
                 switch(moduleTier) {
@@ -560,7 +648,10 @@ public class ArmoryWindow{
                 drawCenteredString(g2d, 1100, stringY, 300, 22, tierColor, "Tier " + Integer.toString(weapon.getTier()) );
                 stringY += 190;
                 g2d.setColor(black);
-                g2d.drawString("Damage: " + Integer.toString(weapon.getDamage()), 1120, stringY);
+                if(weapon.getBullet_number() == 1)
+                    g2d.drawString("Damage: " + Integer.toString(weapon.getDamage()), 1120, stringY);
+                else
+                    g2d.drawString("Damage: " + Integer.toString(weapon.getDamage()) + " x " + Integer.toString(weapon.getBullet_number()), 1120, stringY);
                 stringY += 35;
                 g2d.drawString("Reload: " + Double.toString(weapon.getReload()), 1120, stringY);
                 stringY += 35;
@@ -598,7 +689,10 @@ public class ArmoryWindow{
                 drawCenteredString(g2d, 1100, stringY, 300, 22, tierColor, "Tier " + Integer.toString(weapon.getTier()) );
                 stringY += 190;
                 g2d.setColor(black);
-                g2d.drawString("Damage: " + Integer.toString(weapon.getDamage()), 1120, stringY);
+                if(weapon.getBullet_number() == 1)
+                    g2d.drawString("Damage: " + Integer.toString(weapon.getDamage()), 1120, stringY);
+                else
+                    g2d.drawString("Damage: " + Integer.toString(weapon.getDamage()) + " x " + Integer.toString(weapon.getBullet_number()), 1120, stringY);
                 stringY += 35;
                 g2d.drawString("Reload: " + Double.toString(weapon.getReload()), 1120, stringY);
                 stringY += 35;
@@ -636,7 +730,10 @@ public class ArmoryWindow{
                 drawCenteredString(g2d, 1100, stringY, 300, 22, tierColor, "Tier " + Integer.toString(weapon.getTier()) );
                 stringY += 190;
                 g2d.setColor(black);
-                g2d.drawString("Damage: " + Integer.toString(weapon.getDamage()), 1120, stringY);
+                if(weapon.getBullet_number() == 1)
+                    g2d.drawString("Damage: " + Integer.toString(weapon.getDamage()), 1120, stringY);
+                else
+                    g2d.drawString("Damage: " + Integer.toString(weapon.getDamage()) + " x " + Integer.toString(weapon.getBullet_number()), 1120, stringY);
                 stringY += 35;
                 g2d.drawString("Reload: " + Double.toString(weapon.getReload()), 1120, stringY);
                 stringY += 35;
@@ -674,11 +771,14 @@ public class ArmoryWindow{
                 drawCenteredString(g2d, 1100, stringY, 300, 22, tierColor, "Tier " + Integer.toString(weapon.getTier()) );
                 stringY += 190;
                 g2d.setColor(black);
-                g2d.drawString("Damage: " + Integer.toString(weapon.getDamage()), 1120, stringY);
+                if(weapon.getBullet_number() == 1)
+                    g2d.drawString("Damage: " + Integer.toString(weapon.getDamage()), 1120, stringY);
+                else
+                    g2d.drawString("Damage: " + Integer.toString(weapon.getDamage()) + " x " + Integer.toString(weapon.getBullet_number()), 1120, stringY);
                 stringY += 35;
-                g2d.drawString("Effect: ", 1120, stringY);
+                g2d.drawString("Effect: " + weapon.getStatusName(), 1120, stringY);
                 stringY += 35;
-                g2d.drawString("Duration: ", 1120, stringY);
+                g2d.drawString("Duration: " + Double.toString(weapon.getStatusDuration()), 1120, stringY);
                 stringY += 35;
                 g2d.drawString("Cooldown: " + Double.toString(weapon.getReload()), 1120, stringY);
                 stringY += 35;
@@ -714,11 +814,11 @@ public class ArmoryWindow{
                 drawCenteredString(g2d, 1100, stringY, 300, 22, tierColor, "Tier " + Integer.toString(ability.getTier()) );
                 stringY += 190;
                 g2d.setColor(black);
-                g2d.drawString("Effect: ", 1120, stringY);
+                g2d.drawString("Effect: " + ability.getStatusName(), 1120, stringY);
                 stringY += 35;
-                g2d.drawString("Duration: ", 1120, stringY);
+                g2d.drawString("Duration: " + Double.toString(ability.getBaseDuration()), 1120, stringY);
                 stringY += 35;
-                g2d.drawString("Cooldown: ", 1120, stringY);
+                g2d.drawString("Cooldown: " + Double.toString(ability.getBaseCooldown()), 1120, stringY);
                 break;
             case 7:
                 Module module = eq.getModules().get(activeComponent);
@@ -957,13 +1057,13 @@ public class ArmoryWindow{
                 outlineColor = Color.green;
                 switch(activeTab) {
                     case 1:
-                        if(activeComponent == eq.getBodyID()) {
+                        if(activeComponent == tankEq[0]) {
                             componentEquipped = true;
                             componentLocked = true;
                         }
                         if(mouseClicked && mouseInArea) {
                             if(!componentEquipped)
-                                eq.setBodyID(activeComponent);
+                                tankEq[0] = activeComponent;
                             mouseLocked = true;
                         }
                         break;
@@ -971,16 +1071,16 @@ public class ArmoryWindow{
                         boolean slot1 = false;
                         boolean slot2 = false;
                         boolean slot3 = false;
-                        if(activeComponent == eq.getPrimary1ID()) {
+                        if(activeComponent == tankEq[1]) {
                             componentEquipped = true;
                             componentLocked = true;
                             slot1 = true;
                         }
-                        else if(activeComponent == eq.getPrimary2ID()) {
+                        else if(activeComponent == tankEq[2]) {
                             componentEquipped = true;
                             slot2 = true;
                         }
-                        else if(activeComponent == eq.getPrimary3ID()) {
+                        else if(activeComponent == tankEq[3]) {
                             componentEquipped = true;
                             slot3 = true;
                         }
@@ -988,13 +1088,13 @@ public class ArmoryWindow{
                             if(slot1) {
                             }
                             else if(slot2) {
-                                eq.setPrimary2ID(0);
+                                tankEq[2] = 0;
                             }
                             else if(slot3) {
-                                eq.setPrimary3ID(0);
+                                tankEq[3] = 0;
                             }
                             else if(!componentEquipped){
-                                eq.setPrimary1ID(activeComponent);
+                                tankEq[1] = activeComponent;
                             }
                             mouseLocked = true;
                         }
@@ -1003,16 +1103,16 @@ public class ArmoryWindow{
                         slot1 = false;
                         slot2 = false;
                         slot3 = false;
-                        if(activeComponent == eq.getPrimary1ID()) {
+                        if(activeComponent == tankEq[1]) {
                             componentEquipped = true;
                             componentLocked = true;
                             slot1 = true;
                         }
-                        else if(activeComponent == eq.getPrimary2ID()) {
+                        else if(activeComponent == tankEq[2]) {
                             componentEquipped = true;
                             slot2 = true;
                         }
-                        else if(activeComponent == eq.getPrimary3ID()) {
+                        else if(activeComponent == tankEq[3]) {
                             componentEquipped = true;
                             slot3 = true;
                         }
@@ -1020,13 +1120,13 @@ public class ArmoryWindow{
                             if(slot1) {
                             }
                             else if(slot2) {
-                                eq.setPrimary2ID(0);
+                                tankEq[2] = 0;
                             }
                             else if(slot3) {
-                                eq.setPrimary3ID(0);
+                                tankEq[3] = 0;
                             }
                             else if(!componentEquipped){
-                                eq.setPrimary2ID(activeComponent);
+                                tankEq[2] = activeComponent;
                             }
                             mouseLocked = true;
                         }
@@ -1035,16 +1135,16 @@ public class ArmoryWindow{
                         slot1 = false;
                         slot2 = false;
                         slot3 = false;
-                        if(activeComponent == eq.getPrimary1ID()) {
+                        if(activeComponent == tankEq[1]) {
                             componentEquipped = true;
                             componentLocked = true;
                             slot1 = true;
                         }
-                        if(activeComponent == eq.getPrimary2ID()) {
+                        if(activeComponent == tankEq[1]) {
                             componentEquipped = true;
                             slot2 = true;
                         }
-                        else if(activeComponent == eq.getPrimary3ID()) {
+                        else if(activeComponent == tankEq[1]) {
                             componentEquipped = true;
                             slot3 = true;
                         }
@@ -1052,38 +1152,38 @@ public class ArmoryWindow{
                             if(slot1) {
                             }
                             else if(slot2) {
-                                eq.setPrimary2ID(0);
+                                tankEq[2] = 0;
                             }
                             else if(slot3) {
-                                eq.setPrimary3ID(0);
+                                tankEq[3] = 0;
                             }
                             else if(!componentEquipped){
-                                eq.setPrimary3ID(activeComponent);
+                                tankEq[3] = activeComponent;
                             }
                             mouseLocked = true;
                         }
                         break;
                     case 5:
-                        if(activeComponent == eq.getSecondaryID()) {
+                        if(activeComponent == tankEq[4]) {
                             componentEquipped = true;
                         }
                         if(mouseClicked && mouseInArea) {
                             if(componentEquipped)
-                                eq.setSecondaryID(0);
+                                tankEq[4] = 0;
                             else
-                                eq.setSecondaryID(activeComponent);
+                                tankEq[4] = activeComponent;
                             mouseLocked = true;
                         }
                         break;
                     case 6:
-                        if(activeComponent == eq.getAbilityID()) {
+                        if(activeComponent == tankEq[5]) {
                             componentEquipped = true;
                         }
                         if(mouseClicked && mouseInArea) {
                             if(componentEquipped)
-                                eq.setAbilityID(0);
+                                tankEq[5] = 0;
                             else
-                                eq.setAbilityID(activeComponent);
+                                tankEq[5] = activeComponent;
                             mouseLocked = true;
                         }
                         break;
@@ -1091,30 +1191,30 @@ public class ArmoryWindow{
                         slot1 = false;
                         slot2 = false;
                         slot3 = false;
-                        if(activeComponent == eq.getModule1ID()) {
+                        if(activeComponent == tankEq[6]) {
                             componentEquipped = true;
                             slot1 = true;
                         }
-                        if(activeComponent == eq.getModule2ID()) {
+                        if(activeComponent == tankEq[7]) {
                             componentEquipped = true;
                             slot2 = true;
                         }
-                        else if(activeComponent == eq.getModule3ID()) {
+                        else if(activeComponent == tankEq[8]) {
                             componentEquipped = true;
                             slot3 = true;
                         }
                         if(mouseClicked && mouseInArea) {
                             if(slot1) {
-                                eq.setModule1ID(0);
+                                tankEq[6] = 0;
                             }
                             else if(slot2) {
-                                eq.setModule2ID(0);
+                                tankEq[7] = 0;
                             }
                             else if(slot3) {
-                                eq.setModule3ID(0);
+                                tankEq[8] = 0;
                             }
                             else if(!componentEquipped){
-                                eq.setModule1ID(activeComponent);
+                                tankEq[6] = activeComponent;
                             }
                             mouseLocked = true;
                         }
@@ -1123,30 +1223,30 @@ public class ArmoryWindow{
                         slot1 = false;
                         slot2 = false;
                         slot3 = false;
-                        if(activeComponent == eq.getModule1ID()) {
+                        if(activeComponent == tankEq[6]) {
                             componentEquipped = true;
                             slot1 = true;
                         }
-                        if(activeComponent == eq.getModule2ID()) {
+                        if(activeComponent == tankEq[7]) {
                             componentEquipped = true;
                             slot2 = true;
                         }
-                        else if(activeComponent == eq.getModule3ID()) {
+                        else if(activeComponent == tankEq[8]) {
                             componentEquipped = true;
                             slot3 = true;
                         }
                         if(mouseClicked && mouseInArea) {
                             if(slot1) {
-                                eq.setModule1ID(0);
+                                tankEq[6] = 0;
                             }
                             else if(slot2) {
-                                eq.setModule2ID(0);
+                                tankEq[7] = 0;
                             }
                             else if(slot3) {
-                                eq.setModule3ID(0);
+                                tankEq[8] = 0;
                             }
                             else if(!componentEquipped){
-                                eq.setModule2ID(activeComponent);
+                                tankEq[7] = activeComponent;
                             }
                             mouseLocked = true;
                         }
@@ -1155,30 +1255,30 @@ public class ArmoryWindow{
                         slot1 = false;
                         slot2 = false;
                         slot3 = false;
-                        if(activeComponent == eq.getModule1ID()) {
+                        if(activeComponent == tankEq[6]) {
                             componentEquipped = true;
                             slot1 = true;
                         }
-                        if(activeComponent == eq.getModule2ID()) {
+                        if(activeComponent == tankEq[7]) {
                             componentEquipped = true;
                             slot2 = true;
                         }
-                        else if(activeComponent == eq.getModule3ID()) {
+                        else if(activeComponent == tankEq[8]) {
                             componentEquipped = true;
                             slot3 = true;
                         }
                         if(mouseClicked && mouseInArea) {
                             if(slot1) {
-                                eq.setModule1ID(0);
+                                tankEq[6] = 0;
                             }
                             else if(slot2) {
-                                eq.setModule2ID(0);
+                                tankEq[7] = 0;
                             }
                             else if(slot3) {
-                                eq.setModule3ID(0);
+                                tankEq[8] = 0;
                             }
                             else if(!componentEquipped){
-                                eq.setModule3ID(activeComponent);
+                                tankEq[8] = activeComponent;
                             }
                             mouseLocked = true;
                         }
@@ -1204,15 +1304,7 @@ public class ArmoryWindow{
             }
             drawButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 4, buttonColor, outlineColor);
             drawCenteredString(g2d, buttonX, buttonY + buttonHeight / 4, buttonWidth, 26, outlineColor, equipString);
-        }
-        
-        //Money string
-        stringY = 900;
-        Font font1 = new Font("Arial", Font.BOLD, 28 );
-        g2d.setFont(font1);
-        g2d.setColor(Color.yellow);
-        g2d.drawString("Money: " + Integer.toString(eq.getMoney()) + "$", 1120, stringY);
-        
+        }       
     }
     
 
@@ -1229,6 +1321,25 @@ public class ArmoryWindow{
     
     public void drawCenteredString(Graphics2D g2d, int x, int y, int width, int height, Color textColor, String text) {       
         Font font = new Font("Arial", Font.BOLD, height );
+        g2d.setFont(font);
+        FontMetrics fm = g2d.getFontMetrics();
+        int stringX = x + ((width - fm.stringWidth(text)) / 2);
+        int stringY = y + ((height - fm.getHeight()) / 2) + fm.getAscent();
+
+        g2d.setColor(textColor);
+        g2d.drawString(text, stringX, stringY);
+    }
+    
+    public void drawTextButton(Graphics2D g2d, int x, int y, int width, int height, int outlineWidth, Color buttonColor, Color outlineColor, Color textColor, String text) {
+        g2d.setColor(buttonColor);
+        g2d.fillRect(x, y, width, height);
+        g2d.setColor(outlineColor);
+        g2d.fillRect(x, y, width, outlineWidth);
+        g2d.fillRect(x, y + height - outlineWidth, width, outlineWidth);
+        g2d.fillRect(x, y, outlineWidth, height);
+        g2d.fillRect(x + width - outlineWidth, y, outlineWidth, height);
+        
+        Font font = new Font("Arial", Font.BOLD, (int) Math.round(1.0 * (height - 2 * outlineWidth) * 0.8));
         g2d.setFont(font);
         FontMetrics fm = g2d.getFontMetrics();
         int stringX = x + ((width - fm.stringWidth(text)) / 2);

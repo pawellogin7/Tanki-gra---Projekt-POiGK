@@ -17,7 +17,9 @@ public class Player {
         private int baseRegen, regen;
         private int baseArmor, armor;
         private int baseSpeed, speed;
-        double regenCooldown;               
+        private double regenCooldown;
+        private int activeWeapon, weaponsNumber, activeTankSlot;
+        private boolean secondaryChosen, abilityChosen;
         
         private boolean movingLeft = false;
         private boolean movingRight = false;
@@ -37,34 +39,62 @@ public class Player {
         private Weapon secondaryWeapon = nullWeapon;
         private StatusEffects status = new StatusEffects();
         private Ability ability = new Ability(0, 0);
-        private Module module1;
-        private Module module2;
-        private Module module3;
+        private Module module1 = new Module(0, 0, 0, 0, 0, 0);
+        private Module module2 = new Module(0, 0, 0, 0, 0, 0);
+        private Module module3 = new Module(0, 0, 0, 0, 0, 0);
         
         Player(Equipment eq) {
-            body = eq.getTankBodies().get(eq.getBodyID());
-            primaryWeapon1 = eq.getPrimaryWeapons().get(eq.getPrimary1ID());
-            primaryWeapon2 = eq.getPrimaryWeapons().get(eq.getPrimary2ID());
-            primaryWeapon3 = eq.getPrimaryWeapons().get(eq.getPrimary3ID());
-            secondaryWeapon = eq.getSecondaryWeapons().get(eq.getSecondaryID());
-            ability = eq.getAbilities().get(eq.getAbilityID());
-            module1 = eq.getModules().get(eq.getModule1ID());
-            module2 = eq.getModules().get(eq.getModule2ID());
-            module3 = eq.getModules().get(eq.getModule3ID());
+            activeTankSlot = 1;
+            int[] tankEq = new int[9];
+            switch(activeTankSlot) {
+                case 1:
+                    tankEq = eq.getTankSlot1();
+                    break;
+                case 2:
+                    tankEq = eq.getTankSlot2();
+                    break;
+                case 3:
+                    tankEq = eq.getTankSlot3();
+                    break;
+            }
+            body = eq.getTankBodies().get(tankEq[0]);
+            primaryWeapon1 = eq.getPrimaryWeapons().get(tankEq[1]);
+            primaryWeapon2 = eq.getPrimaryWeapons().get(tankEq[2]);
+            primaryWeapon3 = eq.getPrimaryWeapons().get(tankEq[3]);
+            secondaryWeapon = eq.getSecondaryWeapons().get(tankEq[4]);
+            if(tankEq[4] == 0)
+                secondaryChosen = false;
+            else
+                secondaryChosen = true;
+            ability = eq.getAbilities().get(tankEq[5]);
+            if(tankEq[5] == 0)
+                abilityChosen = false;
+            else
+                abilityChosen = true;
+            module1 = eq.getModules().get(tankEq[6]);
+            module2 = eq.getModules().get(tankEq[7]);
+            module3 = eq.getModules().get(tankEq[8]);
             
             baseMaxHP = body.getMaxHp() + checkModules(1);
+            if(baseMaxHP < 1)
+                baseMaxHP = 1;
             maxHP = baseMaxHP;
-            HP = 200;
+            HP = maxHP;
             
             baseRegen = body.getRegen() + checkModules(2);
+            if(baseRegen < 0)
+                baseRegen = 0;
             regen = baseRegen;
             regenCooldown = 0.0;
             
             baseSpeed = body.getMoveSpeed() + checkModules(3);
+            if(baseSpeed < 2)
+                baseSpeed = 2;    
             speed = baseSpeed;
-            primaryWeapon = primaryWeapon1;
             
             baseArmor = body.getArmor() + checkModules(4);
+            if(baseArmor < 0)
+                baseArmor = 0;
             armor = baseArmor;
             
             double damageBoost = 1.0 + (1.0 * checkModules(10) / 100);
@@ -90,16 +120,39 @@ public class Player {
             primaryWeapon3.setBaseAccuracy((int) (1.0 * primaryWeapon3.getBaseAccuracy() * accuracyBoost));
             primaryWeapon3.setBaseArmorPen((int) (1.0 * primaryWeapon3.getBaseArmorPen() * armorPenBoost));
             primaryWeapon3.setRange((int) (1.0 * primaryWeapon3.getRange() * rangeBoost));
+            
+            primaryWeapon = primaryWeapon1;
+            activeWeapon = 1;
+            weaponsNumber = body.getPrimaryWeaponSlots();
+            if(weaponsNumber == 3) {
+                if(tankEq[2] == 0 && tankEq[3] != 0) {
+                    primaryWeapon2 = primaryWeapon3;
+                    weaponsNumber = 2;
+                }
+                else if(tankEq[2] != 0 && tankEq[3] == 0) {
+                    weaponsNumber = 2;
+                }
+                else if(tankEq[2] == 0 && tankEq[3] == 0) {
+                    weaponsNumber = 1;
+                }
+            }
+            else if(weaponsNumber == 2) {
+                if(tankEq[2] == 0) {
+                    weaponsNumber = 1;
+                }
+            }
         }
         
         private int checkModules(int statType) {
             int statEffect = 0;
-            if(module1.getStat1Type() == statType)
-                statEffect += module1.getStat1Effect();
-            else if(module1.getStat2Type() == statType)
-                statEffect += module1.getStat2Effect();
-            else if(module1.getStat3Type() == statType)
-                statEffect += module1.getStat3Effect();
+            if(body.getModuleSlots() >= 1) {
+                if(module1.getStat1Type() == statType)
+                    statEffect += module1.getStat1Effect();
+                else if(module1.getStat2Type() == statType)
+                    statEffect += module1.getStat2Effect();
+                else if(module1.getStat3Type() == statType)
+                    statEffect += module1.getStat3Effect();
+            }
             
             if(body.getModuleSlots() >= 2) {
                 if(module2.getStat1Type() == statType)
@@ -124,6 +177,9 @@ public class Player {
         
 	public void update() {
             primaryWeapon.update();
+            primaryWeapon1.update();
+            primaryWeapon2.update();
+            primaryWeapon3.update();
             secondaryWeapon.update();
             status.update();
             ability.update();
@@ -143,14 +199,19 @@ public class Player {
             switch(key) {
                 case 1:
                     primaryWeapon = primaryWeapon1;
+                    activeWeapon = 1;
                     break;
                 case 2:
-                    if(body.getPrimaryWeaponSlots() >= 2)
+                    if(weaponsNumber >= 2) {
                         primaryWeapon = primaryWeapon2;
+                        activeWeapon = 2;
+                    }
                     break;
                 case 3:
-                    if(body.getPrimaryWeaponSlots() >= 3)
+                    if(weaponsNumber >= 3) {
                         primaryWeapon = primaryWeapon3;
+                        activeWeapon = 3;
+                    }
                     break;
             }
         }
@@ -412,5 +473,122 @@ public class Player {
         this.secondaryWeapon = secondaryWeapon;
     }
 
+    public int getActiveWeapon() {
+        return activeWeapon;
+    }
+
+    public void setActiveWeapon(int activeWeapon) {
+        this.activeWeapon = activeWeapon;
+    }
+
+    public int getWeaponsNumber() {
+        return weaponsNumber;
+    }
+
+    public void setWeaponsNumber(int weaponsNumber) {
+        this.weaponsNumber = weaponsNumber;
+    }
+
+    public Weapon getPrimaryWeapon1() {
+        return primaryWeapon1;
+    }
+
+    public void setPrimaryWeapon1(Weapon primaryWeapon1) {
+        this.primaryWeapon1 = primaryWeapon1;
+    }
+
+    public Weapon getPrimaryWeapon2() {
+        return primaryWeapon2;
+    }
+
+    public void setPrimaryWeapon2(Weapon primaryWeapon2) {
+        this.primaryWeapon2 = primaryWeapon2;
+    }
+
+    public Weapon getPrimaryWeapon3() {
+        return primaryWeapon3;
+    }
+
+    public void setPrimaryWeapon3(Weapon primaryWeapon3) {
+        this.primaryWeapon3 = primaryWeapon3;
+    }
+
+    public int getHP() {
+        return HP;
+    }
+
+    public void setHP(int HP) {
+        this.HP = HP;
+    }
+
+    public int getBaseRegen() {
+        return baseRegen;
+    }
+
+    public void setBaseRegen(int baseRegen) {
+        this.baseRegen = baseRegen;
+    }
+
+    public int getRegen() {
+        return regen;
+    }
+
+    public void setRegen(int regen) {
+        this.regen = regen;
+    }
+
+    public int getArmor() {
+        return armor;
+    }
+
+    public void setArmor(int armor) {
+        this.armor = armor;
+    }
+
+    public int getBaseSpeed() {
+        return baseSpeed;
+    }
+
+    public void setBaseSpeed(int baseSpeed) {
+        this.baseSpeed = baseSpeed;
+    }
+
+    public int getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(int speed) {
+        this.speed = speed;
+    }
+
+    public double getRegenCooldown() {
+        return regenCooldown;
+    }
+
+    public void setRegenCooldown(double regenCooldown) {
+        this.regenCooldown = regenCooldown;
+    }
+
+    public StatusEffects getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusEffects status) {
+        this.status = status;
+    }
+
+    public int getActiveTankSlot() {
+        return activeTankSlot;
+    }
+
+    public boolean isAbilityChosen() {
+        return abilityChosen;
+    }
+
+    public boolean isSecondaryChosen() {
+        return secondaryChosen;
+    }
+
+    
     
 } 

@@ -8,8 +8,9 @@ public class Weapon {
     private int damage, accuracy, armorPen;
     private double  baseReload, reload, cooldown;
     private int projectileType, tier, cost;
+    private double statusDuration;
     private StatusEffects status = new StatusEffects();
-    private String name;
+    private String name, statusName;
     
     Weapon(int dmg, double rld, int acc, int a_pen, int rng, int vel, int num) {
         baseDamage = dmg;
@@ -218,6 +219,22 @@ public class Weapon {
 
     public void setCooldown(double cooldown) {
         this.cooldown = cooldown;
+    }
+
+    public double getStatusDuration() {
+        return statusDuration;
+    }
+
+    public void setStatusDuration(double statusDuration) {
+        this.statusDuration = statusDuration;
+    }
+
+    public String getStatusName() {
+        return statusName;
+    }
+
+    public void setStatusName(String statusName) {
+        this.statusName = statusName;
     }
     
     
