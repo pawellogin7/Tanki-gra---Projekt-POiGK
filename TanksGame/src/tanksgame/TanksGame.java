@@ -67,11 +67,11 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
 	}
 
         
-	//Image Setups        
+	//Image Setups     
 	character = getImage(base, "../data/pictures/playerTank.png");
         cursor = getImage(base, "../data/pictures/cursor.png");
         enemyTank = getImage(base, "../data/pictures/enemyTank.png");
-        playerBullet = getImage(base, "../data/playerBullet.png");
+        playerBullet = getImage(base, "../data/pictures/playerBullet.png");
         projectileFire = getImage(base, "../data/pictures/projectileFire.png");
         projectileLaser = getImage(base, "../data/pictures/projectileLaser.png");
         
@@ -125,7 +125,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     @Override
     public void start() {
         bg1 = new Background(0, 0);
-        bg2 = new Background(2160, 0); 
+        bg2 = new Background(2160, 1000); 
         
         player = new Player(equipment);
         t1 = new EnemyTank(340, 360);
@@ -164,7 +164,6 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
             
             if(mouse1Down)
                 player.shootPrimary(mouseX, mouseY);
-            
             if(mouse2Down)
                 player.shootSecondary(mouseX, mouseY);
                 
@@ -247,7 +246,6 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
                 armory.setEq(equipment);
                 armory.update(g, mouseX, mouseY, mouse1Down, equipment);
                 equipment = armory.getEq();
-                player = new Player(equipment);
                 
                 switch(armory.getButtonClicked()) {
                     case 0:

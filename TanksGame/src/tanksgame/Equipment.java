@@ -120,19 +120,19 @@ public class Equipment {
         int i = 1;
         switch(primaryWeaponsTier[i]) {
             case 0:
-                addPrimaryWeapon(new Weapon(80, 0.15, 85, 5, 800, 12, 1), i, "Machinegun", 0, 2000, 0);
+                addPrimaryWeapon(new Weapon(80, 0.3, 85, 5, 800, 12, 1), i, "Machinegun", 0, 2000, 0);
                 break;  
             case 1:
-                addPrimaryWeapon(new Weapon(80, 0.15, 85, 5, 800, 12, 1), i, "Machinegun", 1, 2000, 0);
+                addPrimaryWeapon(new Weapon(80, 0.3, 87, 5, 800, 12, 1), i, "Machinegun", 1, 2000, 0);
                 break;
             case 2:
-                addPrimaryWeapon(new Weapon(80, 0.15, 85, 5, 800, 12, 1), i, "Machinegun", 2, 2000, 0);
+                addPrimaryWeapon(new Weapon(80, 0.25, 89, 5, 800, 12, 1), i, "Machinegun", 2, 2000, 0);
                 break;  
             case 3:
-                addPrimaryWeapon(new Weapon(80, 0.15, 85, 5, 800, 12, 1), i, "Machinegun", 3, 2000, 0);
+                addPrimaryWeapon(new Weapon(80, 0.20, 91, 5, 800, 12, 1), i, "Machinegun", 3, 2000, 0);
                 break;
             case 4:
-                addPrimaryWeapon(new Weapon(80, 0.15, 85, 5, 800, 12, 1), i, "Machinegun", 4, 2000, 0);
+                addPrimaryWeapon(new Weapon(80, 0.15, 93, 5, 800, 12, 1), i, "Machinegun", 4, 2000, 0);
                 break;
         }
         
@@ -140,19 +140,19 @@ public class Equipment {
         
         switch(primaryWeaponsTier[i]) {
             case 0:
-                addPrimaryWeapon(new Weapon(15, 0.7, 70, 5, 600, 10, 7), i, "Shotgun", 0, 5000, 0);
+                addPrimaryWeapon(new Weapon(15, 1.8, 70, 5, 600, 10, 7), i, "Shotgun", 0, 5000, 0);
                 break;
             case 1:
-                addPrimaryWeapon(new Weapon(15, 0.7, 70, 5, 600, 10, 7), i, "Shotgun", 1, 5000, 0);
+                addPrimaryWeapon(new Weapon(15, 1.8, 70, 5, 600, 10, 7), i, "Shotgun", 1, 5000, 0);
                 break;
             case 2:
-                addPrimaryWeapon(new Weapon(15, 0.7, 70, 5, 600, 10, 7), i, "Shotgun", 2, 5000, 0);
+                addPrimaryWeapon(new Weapon(15, 1.6, 70, 5, 600, 10, 7), i, "Shotgun", 2, 5000, 0);
                 break;
             case 3:
-                addPrimaryWeapon(new Weapon(15, 0.7, 70, 5, 600, 10, 7), i, "Shotgun", 3, 5000, 0);
+                addPrimaryWeapon(new Weapon(15, 1.4, 70, 5, 600, 10, 7), i, "Shotgun", 3, 5000, 0);
                 break;
             case 4:
-                addPrimaryWeapon(new Weapon(15, 0.7, 70, 5, 600, 10, 7), i, "Shotgun", 4, 5000, 0);
+                addPrimaryWeapon(new Weapon(15, 1.2, 70, 5, 600, 10, 7), i, "Shotgun", 4, 5000, 0);
                 break;
             
         }
@@ -160,19 +160,19 @@ public class Equipment {
         
         switch(primaryWeaponsTier[i]) {
             case 0:
-                addPrimaryWeapon(new Weapon(200, 1, 95, 50, 1200, 18, 1), i, "Sniper Rifle", 0, 7000, 0);
+                addPrimaryWeapon(new Weapon(200, 2.4, 95, 50, 1200, 18, 2), i, "Sniper Rifle", 0, 7000, 0);
                 break;
             case 1:
-                addPrimaryWeapon(new Weapon(200, 1, 95, 50, 1200, 18, 1), i, "Sniper Rifle", 1, 7000, 0);
+                addPrimaryWeapon(new Weapon(200, 2.4, 95, 50, 1200, 18, 1), i, "Sniper Rifle", 1, 7000, 0);
                 break;    
             case 2:
-                addPrimaryWeapon(new Weapon(200, 1, 95, 50, 1200, 18, 1), i, "Sniper Rifle", 2, 7000, 0);
+                addPrimaryWeapon(new Weapon(200, 2.2, 97, 50, 1200, 18, 1), i, "Sniper Rifle", 2, 7000, 0);
                 break;
             case 3:
-                addPrimaryWeapon(new Weapon(200, 1, 95, 50, 1200, 18, 1), i, "Sniper Rifle", 3, 7000, 0);
+                addPrimaryWeapon(new Weapon(200, 2.0, 99, 50, 1200, 18, 1), i, "Sniper Rifle", 3, 7000, 0);
                 break;
             case 4:
-                addPrimaryWeapon(new Weapon(200, 1, 95, 50, 1200, 18, 1), i, "Sniper Rifle", 4, 7000, 0);
+                addPrimaryWeapon(new Weapon(200, 1.8, 100, 50, 1200, 18, 1), i, "Sniper Rifle", 4, 7000, 0);
                 break;
         }
         i++;
@@ -320,19 +320,19 @@ public class Equipment {
         int i = 1;
         switch(modulesTier[i]) {
             case 0:
-                addModule(new Module(1, 50, 0, 0, 0, 0), i, "Health module", 0, 2000);
+                addModule(new Module(1, 30, 0, 0, 0, 0), i, "Health module", 0, 2000);
                 break;  
             case 1:
-                addModule(new Module(1, 50, 0, 0, 0, 0), i, "Health module", 1, 2000);
+                addModule(new Module(1, 60, 0, 0, 0, 0), i, "Health module", 1, 2000);
                 break;
             case 2:
-                addModule(new Module(1, 50, 10, 15, 0, 0), i, "Health module", 2, 2000);
+                addModule(new Module(1, 100, 0, 0, 0, 0), i, "Health module", 2, 2000);
                 break;  
             case 3:
-                addModule(new Module(1, 50, 10, 10, 11, -10), i, "Health module", 3, 2000);
+                addModule(new Module(1, 150, 0, 0, 0, 0), i, "Health module", 3, 2000);
                 break;
             case 4:
-                addModule(new Module(1, 50, 2, 10, 3, 3), i, "Health module", 4, 2000);
+                addModule(new Module(1, 200, 2, 10, 0, 0), i, "Health module", 4, 2000);
                 break;
         }
         i++;

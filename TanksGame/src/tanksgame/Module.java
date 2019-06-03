@@ -46,48 +46,50 @@ public class Module {
         }
         
         boolean percent = false;
-        switch(statType) {
-            case 1:
-                statString += "Max HP";
-                break;
-            case 2:
-                statString += "HP regen";
-                break;
-            case 3:
-                statString += "Movement speed";
-                break;
-            case 4:
-                statString += "Armor";
-                break;
-            case 10:
-                statString += "Weapon damage";
-                percent = true;
-                break;
-            case 11:
-                statString += "Weapon reload";
-                percent = true;
-                break;
-            case 12:
-                statString += "Weapon accuracy";
-                percent = true;
-                break;
-            case 13:
-                statString += "Weapon armor pen";
-                percent = true;
-                break;
-            case 14:
-                statString += "Weapon range";
-                percent = true;
-                break;
+        if(statEffect != 0) {
+            switch(statType) {
+                case 1:
+                    statString += "Max HP";
+                    break;
+                case 2:
+                    statString += "HP regen";
+                    break;
+                case 3:
+                    statString += "Movement speed";
+                    break;
+                case 4:
+                    statString += "Armor";
+                    break;
+                case 10:
+                    statString += "Weapon damage";
+                    percent = true;
+                    break;
+                case 11:
+                    statString += "Weapon reload";
+                    percent = true;
+                    break;
+                case 12:
+                    statString += "Weapon accuracy";
+                    percent = true;
+                    break;
+                case 13:
+                    statString += "Weapon armor pen";
+                    percent = true;
+                    break;
+                case 14:
+                    statString += "Weapon range";
+                    percent = true;
+                    break;
+            }
+
+            if((statEffect >= 0 && statType != 11) || (statEffect < 0 && statType == 11))
+                statString += " +";
+            else
+                statString += " -";
+            statString += Integer.toString(Math.abs(statEffect));
+                if(percent)
+            statString += "%";
         }
-                
-        if(statEffect >= 0)
-            statString += " + ";
-        else
-            statString += " - ";
-        statString += Integer.toString(Math.abs(statEffect));
-            if(percent)
-        statString += "%";
                 
         return statString;
     }
