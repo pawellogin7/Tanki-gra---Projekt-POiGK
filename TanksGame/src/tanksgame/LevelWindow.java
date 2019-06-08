@@ -11,9 +11,9 @@ import java.util.ArrayList;
 
 
 public class LevelWindow {
-    private Image image, character, background, enemyTank; 
+    private Image character, background, enemyTank; 
     private Image playerBullet, projectileFire, projectileLaser;
-    private int currentLevel, mouseX, mouseY;
+    private int currentLevel, mouseX, mouseY, buttonClicked;
     private boolean mouse1Clicked, mouse2Clicked, mouseLocked, paused, tankSelected, levelActive;
     private Equipment eq;
     private Player player;
@@ -28,6 +28,11 @@ public class LevelWindow {
         mouseLocked = true;
         eq = equipment; 
         player = new Player(eq, 1);
+        player.setMovingDown(false);
+        player.setMovingUp(false);
+        player.setMovingRight(false);
+        player.setMovingLeft(false);
+        player.update();
         
         bg1 = new Background(0, 0);
         bg2 = new Background(2160, 1000); 
@@ -46,36 +51,48 @@ public class LevelWindow {
             mouse1Clicked = false;
             mouse2Clicked = false;
         }
+        buttonClicked = 0;
         
-        if(!paused)
-            levelActive = true;
-        else
-            levelActive = false;
         paint(g);
     }
 
     public void paint(Graphics g) {        
         Graphics2D g2d = (Graphics2D) g.create();
+        TanksGame.getBg1().update();
+        TanksGame.getBg2().update();
+        g.drawImage(background, TanksGame.getBg1().getBgX(), TanksGame.getBg1().getBgY(), null);
+        g.drawImage(background, TanksGame.getBg2().getBgX(), TanksGame.getBg2().getBgY(), null);
         
-        if(levelActive) { 
-            if(mouse1Clicked)
-                player.shootPrimary(mouseX, mouseY);
-            if(mouse2Clicked)
-                player.shootSecondary(mouseX, mouseY);
-            bg1.update();
-            bg2.update();
-            t1.update();
-            t2.update();
-            updateProjectiles();
-            player.update();
-            drawLevel1(g2d); 
-        }
         if(!tankSelected) {
             paused = true;
             drawTankSelection(g2d);
         }
+        else {
+            if(paused) {
+                player.setMovingDown(false);
+                player.setMovingUp(false);
+                player.setMovingRight(false);
+                player.setMovingLeft(false);
+                player.updateBackground();
+            }
+            else if(!paused) { 
+                if(mouse1Clicked)
+                    player.shootPrimary(mouseX, mouseY);
+                if(mouse2Clicked)
+                    player.shootSecondary(mouseX, mouseY);
+                updateProjectiles();
+                player.update(); 
+            }
+            t1.update();
+            t2.update();
+            drawLevel1(g2d);
+            if(paused)
+                drawPauseMenu(g2d);
+        }
+        
     }
     
+
     private void updateProjectiles(){ 
         ArrayList projectiles = player.getProjectiles();
         for (int i = 0; i < projectiles.size(); i++) {
@@ -94,10 +111,7 @@ public class LevelWindow {
         
     }
     
-    public void drawLevel1(Graphics2D g2d) {
-        g2d.drawImage(background, bg1.getBgX(), bg1.getBgY(), null);
-        g2d.drawImage(background, bg2.getBgX(), bg2.getBgY(), null);
-        
+    public void drawLevel1(Graphics2D g2d) {       
         g2d.drawImage(enemyTank, t1.getCenterX() - 64, t1.getCenterY() - 32, null);
         g2d.drawImage(enemyTank, t2.getCenterX() - 64, t2.getCenterY() - 32, null);
         g2d.drawImage(character, player.getCenterX() - 64, player.getCenterY() - 32, null);
@@ -629,6 +643,47 @@ public class LevelWindow {
             return statEffect;
         }
     
+    //---------------------------------------------------------------------
+    public void escPause() {
+        if(tankSelected) {
+            if(paused)
+                paused = false;
+            else
+                paused = true;
+        }
+        else
+            buttonClicked = 1;
+    }
+    
+    private void drawPauseMenu(Graphics2D g2d) {
+        drawButton(g2d, 500, 350, 400, 250, 10, Color.white, Color.black);
+        
+        int buttonWidth = 300;
+        int buttonHeight = 50;
+        int buttonX = 550;
+        int buttonY = 400;
+        Color buttonColor = Color.lightGray;
+        Color outlineColor = Color.black;
+        
+        if(mouseX >= buttonX && mouseX < buttonX + buttonWidth 
+             && mouseY >= buttonY && mouseY < buttonY + buttonHeight) {
+            outlineColor = Color.red;
+            if(mouse1Clicked == true)
+                paused = false;
+        }
+        drawTextButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 5, buttonColor, outlineColor, outlineColor, "Resume");
+        
+        buttonY += 100;
+        outlineColor = Color.black;
+        if(mouseX >= buttonX && mouseX < buttonX + buttonWidth 
+             && mouseY >= buttonY && mouseY < buttonY + buttonHeight) {
+            outlineColor = Color.red;
+            if(mouse1Clicked == true)
+                buttonClicked = 1;
+        }
+        drawTextButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 5, buttonColor, outlineColor, outlineColor, "Exit to menu");
+    }
+    
     //-----------------------------------------------------------------------------
     public void drawButton(Graphics2D g2d, int x, int y, int width, int height, int outlineWidth, Color buttonColor, Color outlineColor) {
         g2d.setColor(buttonColor);
@@ -682,10 +737,6 @@ public class LevelWindow {
         this.projectileLaser = projectileLaser;
     }
 
-    public void setImage(Image image) {
-        this.image = image;
-    }
-
     public void setCharacter(Image character) {
         this.character = character;
     }
@@ -706,14 +757,6 @@ public class LevelWindow {
         this.paused = paused;
     }
 
-    public boolean isLevelActive() {
-        return levelActive;
-    }
-
-    public void setLevelActive(boolean levelActive) {
-        this.levelActive = levelActive;
-    }
-
     public boolean isMouseLocked() {
         return mouseLocked;
     }
@@ -721,8 +764,6 @@ public class LevelWindow {
     public void setMouseLocked(boolean mouseLocked) {
         this.mouseLocked = mouseLocked;
     }
-    
-    
 
     public Player getPlayer() {
         return player;
@@ -730,6 +771,14 @@ public class LevelWindow {
 
     public void setPlayer(Player player) {
         this.player = player;
+    }
+
+    public int getButtonClicked() {
+        return buttonClicked;
+    }
+
+    public void setButtonClicked(int buttonClicked) {
+        this.buttonClicked = buttonClicked;
     }
     
     

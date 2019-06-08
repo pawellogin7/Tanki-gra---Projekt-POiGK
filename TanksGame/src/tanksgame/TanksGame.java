@@ -27,8 +27,6 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     private LevelSelectionWindow levelSelection;
     private LevelWindow levelWindow;
     private SaveSelectionWindow saveSelection;
-    private Player player;
-    private EnemyTank t1, t2;
     private Weapon slowingShot, paralyzeShot, jamShot, stunShot, armorBreakShot;
     private Ability speedBoost, sprint, reloadBoost, regenBoost;
     private Image image, character, background, cursor, enemyTank, playerBullet, projectileFire, projectileLaser;
@@ -68,7 +66,8 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
 	}
 
         
-	//Image Setups     
+	//Image Setups 
+        background = getImage(base, "../data/pictures/background.png");
 	character = getImage(base, "../data/pictures/playerTank.png");
         cursor = getImage(base, "../data/pictures/cursor.png");
         enemyTank = getImage(base, "../data/pictures/enemyTank.png");
@@ -128,10 +127,6 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         bg1 = new Background(0, 0);
         bg2 = new Background(2160, 1000); 
         
-        player = new Player(equipment, 1);
-        t1 = new EnemyTank(340, 360);
-        t2 = new EnemyTank(700, 360);
-        
         setCursor(Toolkit.getDefaultToolkit().createCustomCursor(
             cursor, new Point(0,0),"custom cursor"));
         
@@ -181,12 +176,12 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     
     @Override
     public void paint(Graphics g) {
-        
         switch(currentWindow) {
-            case 0: {
+            case 0: { //Main menu window
                 if(currentWindowChanged) {
                     mouse1Down = false;
                     saveFile(saveSlotSelected);
+                    equipment.update();
                     menu = new MenuWindow();
                     currentWindowChanged = false;
                 }
@@ -216,7 +211,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
                     
                 break;
             }
-            case 1: {
+            case 1: { //Armory window
                 if(currentWindowChanged) {
                     armory = new ArmoryWindow();
                     currentWindowChanged = false;
@@ -241,7 +236,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
                 }
                 break;
             }
-            case 2: {
+            case 2: { //Save slot selection window
                 if(currentWindowChanged) {
                     saveSelection = new SaveSelectionWindow(saveSlotSelected);
                     currentWindowChanged = false;
@@ -267,7 +262,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
                 }
                 break;
             }
-            case 3: {
+            case 3: { //Level selection window
                 if(currentWindowChanged) {
                     levelSelection = new LevelSelectionWindow();
                     levelSelection.setLevelCompleted(equipment.getLevelCompleted());
@@ -289,18 +284,31 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
                 }
                 break;
             }
-            case 11: {
+            case 11: { //Level creation window
                 if(currentWindowChanged) {
+                    bg1.setBgX(0);
+                    bg1.setBgY(0);
+                    bg2.setBgX(2160);
+                    bg2.setBgY(1000);
                     currentWindowChanged = false;
                     levelWindow = new LevelWindow(1, equipment);
                     loadLevelPictures();
                 }
-                levelWindow.update(g, mouseX, mouseY, mouse1Down, mouse2Down);
+                
                 if(escKey) {
-                    currentWindow = 0;
+                    levelWindow.escPause();
                     escKey = false;
-                    currentWindowChanged = true;
                 }
+                levelWindow.update(g, mouseX, mouseY, mouse1Down, mouse2Down);
+                
+                switch(levelWindow.getButtonClicked()) {
+                    case 0:
+                        break;
+                    case 1:
+                        currentWindow = 0;
+                        currentWindowChanged = true;
+                }
+                   
                 break;
             }
                     
@@ -312,7 +320,6 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         levelWindow.setBackground(background);
         levelWindow.setCharacter(character);
         levelWindow.setEnemyTank(enemyTank);
-        levelWindow.setImage(image);
         levelWindow.setPlayerBullet(playerBullet);
         levelWindow.setProjectileFire(projectileFire);
         levelWindow.setProjectileLaser(projectileLaser);
@@ -328,42 +335,42 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_W:
-                if(currentWindow == 11 && levelWindow.isLevelActive())
+                if(currentWindow == 11 && !levelWindow.isPaused())
                     levelWindow.getPlayer().moveUp();
             break;
 
             case KeyEvent.VK_S:
-                if(currentWindow == 11 && levelWindow.isLevelActive())
+                if(currentWindow == 11 && !levelWindow.isPaused())
                     levelWindow.getPlayer().moveDown();
             break;
 
             case KeyEvent.VK_A:
-                if(currentWindow == 11 && levelWindow.isLevelActive())
+                if(currentWindow == 11 && !levelWindow.isPaused())
                     levelWindow.getPlayer().moveLeft();
             break;
 
             case KeyEvent.VK_D:
-                if(currentWindow == 11 && levelWindow.isLevelActive())
+                if(currentWindow == 11 && !levelWindow.isPaused())
                     levelWindow.getPlayer().moveRight();
             break;
             
             case KeyEvent.VK_1:
-                if(currentWindow == 11 && levelWindow.isLevelActive())
+                if(currentWindow == 11 && !levelWindow.isPaused())
                     levelWindow.getPlayer().changeWeapon(1);
             break;
             
             case KeyEvent.VK_2:
-                if(currentWindow == 11 && levelWindow.isLevelActive())
+                if(currentWindow == 11 && !levelWindow.isPaused())
                     levelWindow.getPlayer().changeWeapon(2);
             break;
             
             case KeyEvent.VK_3:
-                if(currentWindow == 11 && levelWindow.isLevelActive())
+                if(currentWindow == 11 && !levelWindow.isPaused())
                     levelWindow.getPlayer().changeWeapon(3);
             break;
             
             case KeyEvent.VK_SPACE:
-                if(currentWindow == 11 && levelWindow.isLevelActive())
+                if(currentWindow == 11 && !levelWindow.isPaused())
                     levelWindow.getPlayer().useAbility();
             break;
             
@@ -378,22 +385,22 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     public void keyReleased(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_W:
-                if(currentWindow == 11 && levelWindow.isLevelActive())
+                if(currentWindow == 11 && !levelWindow.isPaused())
                     levelWindow.getPlayer().setMovingUp(false);
             break;
 
             case KeyEvent.VK_S:
-                if(currentWindow == 11 && levelWindow.isLevelActive())
+                if(currentWindow == 11 && !levelWindow.isPaused())
                     levelWindow.getPlayer().setMovingDown(false);
             break;
 
             case KeyEvent.VK_A:
-                if(currentWindow == 11 && levelWindow.isLevelActive())
+                if(currentWindow == 11 && !levelWindow.isPaused())
                     levelWindow.getPlayer().setMovingLeft(false);
             break;
 
             case KeyEvent.VK_D:
-                if(currentWindow == 11 && levelWindow.isLevelActive())
+                if(currentWindow == 11 && !levelWindow.isPaused())
                     levelWindow.getPlayer().setMovingRight(false);
             break;
 

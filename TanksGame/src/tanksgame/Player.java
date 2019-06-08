@@ -198,6 +198,14 @@ public class Player {
             
 	}
         
+        public void updateBackground() {
+            updateSpeed();
+            bg1.setSpeedX(speedX);
+            bg2.setSpeedX(speedX);
+            bg1.setSpeedY(speedY);
+            bg2.setSpeedY(speedY);
+        }
+        
         public void changeWeapon(int key) {
             switch(key) {
                 case 1:
