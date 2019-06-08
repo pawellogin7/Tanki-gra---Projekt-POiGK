@@ -142,14 +142,12 @@ public class Weapon {
         this.bullet_velocity = bullet_velocity;
     }
 
-    
+    public void setCooldown(double cooldown) {
+        this.cooldown = cooldown;
+    }
     
     public double getCooldown() {
         return cooldown;
-    }
-
-    public void setCooldown(int cooldown) {
-        this.cooldown = cooldown;
     }
 
     public int getBullet_number() {
@@ -215,10 +213,6 @@ public class Weapon {
 
     public void setBaseReload(double baseReload) {
         this.baseReload = baseReload;
-    }
-
-    public void setCooldown(double cooldown) {
-        this.cooldown = cooldown;
     }
 
     public double getStatusDuration() {

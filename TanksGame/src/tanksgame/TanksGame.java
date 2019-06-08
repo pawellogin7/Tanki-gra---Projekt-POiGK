@@ -25,6 +25,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     private MenuWindow menu;
     private ArmoryWindow armory;
     private LevelSelectionWindow levelSelection;
+    private LevelWindow levelWindow;
     private SaveSelectionWindow saveSelection;
     private Player player;
     private EnemyTank t1, t2;
@@ -127,7 +128,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         bg1 = new Background(0, 0);
         bg2 = new Background(2160, 1000); 
         
-        player = new Player(equipment);
+        player = new Player(equipment, 1);
         t1 = new EnemyTank(340, 360);
         t2 = new EnemyTank(700, 360);
         
@@ -152,28 +153,6 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     @Override
     public void run() {
         while (true) {
-            ArrayList projectiles = player.getProjectiles();
-            for (int i = 0; i < projectiles.size(); i++) {
-		Projectile p = (Projectile) projectiles.get(i);
-		if (p.isVisible() == true) {
-			p.update();
-		} else {
-			projectiles.remove(i);
-		}
-            }
-            
-            if(mouse1Down)
-                player.shootPrimary(mouseX, mouseY);
-            if(mouse2Down)
-                player.shootSecondary(mouseX, mouseY);
-                
-            bg1.update();
-            bg2.update();
-            player.update();
-            t1.update();
-            t2.update();
-
-            
             repaint();
             try {
                 Thread.sleep(17);
@@ -201,7 +180,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
 
     
     @Override
-    public void paint(Graphics g) { 
+    public void paint(Graphics g) {
         
         switch(currentWindow) {
             case 0: {
@@ -312,10 +291,11 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
             }
             case 11: {
                 if(currentWindowChanged) {
-                    player = new Player(equipment);
                     currentWindowChanged = false;
+                    levelWindow = new LevelWindow(1, equipment);
+                    loadLevelPictures();
                 }
-                drawLevel1(g);
+                levelWindow.update(g, mouseX, mouseY, mouse1Down, mouse2Down);
                 if(escKey) {
                     currentWindow = 0;
                     escKey = false;
@@ -328,227 +308,16 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         
     }
     
-    
-    
-    public void drawLevel1(Graphics g) {
-        
-        g.drawImage(background, bg1.getBgX(), bg1.getBgY(), this);
-        g.drawImage(background, bg2.getBgX(), bg2.getBgY(), this);
-        
-        g.drawImage(enemyTank, t1.getCenterX() - 64, t1.getCenterY() - 32, this);
-        g.drawImage(enemyTank, t2.getCenterX() - 64, t2.getCenterY() - 32, this);
-        g.drawImage(character, player.getCenterX() - 64, player.getCenterY() - 32, this);
-        
-        ArrayList projectiles = player.getProjectiles();
-	for (int i = 0; i < projectiles.size(); i++) {
-            Projectile p = (Projectile) projectiles.get(i);
-            drawProjectile(p, g);
-        }
-        
-        Color tierColor = Color.lightGray;
-        int hudX = 370;
-        int hudY = 890;
-        int hudSize = 2;
-        int percent = player.getAbility().getPercent();
-        if(player.isAbilityChosen()) {
-            switch(player.getAbility().getTier()) {
-                case 0:
-                    tierColor = Color.lightGray;
-                    break;
-                case 1:
-                    tierColor = Color.green;
-                    break;
-                case 2:
-                    tierColor = Color.blue;
-                    break;
-                case 3:
-                    tierColor = Color.magenta;
-                    break;
-                case 4:
-                    tierColor = Color.orange;
-                    break;
-            }
-            drawHud(hudX, hudY, hudSize, percent, g, tierColor); //ability hud
-        }
-        
-        hudX = 430;
-        if(player.isSecondaryChosen()) {
-            percent = player.getSecondaryWeapon().getPercent();
-            switch(player.getSecondaryWeapon().getTier()) {
-                case 0:
-                    tierColor = Color.lightGray;
-                    break;
-                case 1:
-                    tierColor = Color.green;
-                    break;
-                case 2:
-                    tierColor = Color.blue;
-                    break;
-                case 3:
-                    tierColor = Color.magenta;
-                    break;
-                case 4:
-                    tierColor = Color.orange;
-                    break;
-            }
-            drawHud(hudX, hudY, hudSize, percent, g, tierColor); //secondary weapon hud
-        }
-        
-        
-        //primary weapons hud
-        hudX = 920;
-        switch(player.getPrimaryWeapon1().getTier()) {
-            case 0:
-                tierColor = Color.lightGray;
-                break;
-            case 1:
-                tierColor = Color.green;
-                break;
-            case 2:
-                tierColor = Color.blue;
-                break;
-            case 3:
-                tierColor = Color.magenta;
-                break;
-            case 4:
-                tierColor = Color.orange;
-                break;
-        }
-        if(player.getActiveWeapon() == 1)
-            drawHud(hudX, hudY, hudSize, 100, g, tierColor);
-        else
-            drawHud(hudX, hudY, hudSize, 0, g, tierColor);
-        
-        if(player.getWeaponsNumber() >= 2) {
-            hudX += 60;
-            switch(player.getPrimaryWeapon2().getTier()) {
-                case 0:
-                    tierColor = Color.lightGray;
-                    break;
-                case 1:
-                    tierColor = Color.green;
-                    break;
-                case 2:
-                    tierColor = Color.blue;
-                    break;
-                case 3:
-                    tierColor = Color.magenta;
-                    break;
-                case 4:
-                    tierColor = Color.orange;
-                    break;
-            }
-            if(player.getActiveWeapon() == 2)
-                drawHud(hudX, hudY, hudSize, 100, g, tierColor);
-            else
-                drawHud(hudX, hudY, hudSize, 0, g, tierColor);
-        }
-        
-        if(player.getWeaponsNumber() >= 3) {
-            hudX += 60;
-            switch(player.getPrimaryWeapon3().getTier()) {
-                case 0:
-                    tierColor = Color.lightGray;
-                    break;
-                case 1:
-                    tierColor = Color.green;
-                    break;
-                case 2:
-                    tierColor = Color.blue;
-                    break;
-                case 3:
-                    tierColor = Color.magenta;
-                    break;
-                case 4:
-                    tierColor = Color.orange;
-                    break;
-            }
-            if(player.getActiveWeapon() == 3)
-                drawHud(hudX, hudY, hudSize, 100, g, tierColor);
-            else
-                drawHud(hudX, hudY, hudSize, 0, g, tierColor);
-        }
-        
-        
-        drawPlayerHP(500, 903, 400, 30, g);
+    public void loadLevelPictures() {
+        levelWindow.setBackground(background);
+        levelWindow.setCharacter(character);
+        levelWindow.setEnemyTank(enemyTank);
+        levelWindow.setImage(image);
+        levelWindow.setPlayerBullet(playerBullet);
+        levelWindow.setProjectileFire(projectileFire);
+        levelWindow.setProjectileLaser(projectileLaser);
     }
     
-    public void drawProjectile(Projectile p, Graphics g) {
-        int typ = p.getProjectileType();
-        switch(typ)
-        {
-            case 0:
-              g.drawImage(playerBullet, p.getX(), p.getY(), this);
-              break;
-            case 1:
-              break;
-            case 2:
-              g.drawImage(projectileLaser, p.getX(), p.getY(), this);
-              break;
-            case 3:
-              g.drawImage(projectileFire, p.getX(), p.getY(), this);
-              break;
-        }
-    }
-
-    public void drawHud(int hudX, int hudY, int hudSize, int hudPercent, Graphics g, Color tierColor) {
-        int size = 26 * hudSize;
-        int lineSize = 2 * hudSize;
-        int startPoint = hudX + size / 2;
-        int pointxLeft = hudX;
-        int pointxRight = hudX + 26 * hudSize - lineSize;
-        int pointyUp = hudY + hudSize;
-        int pointyDown = hudY + 26 * hudSize - lineSize / 2;
-        
-        g.setColor(tierColor);
-        g.fillRect(pointxLeft, pointyUp, size, size);
-        g.setColor(Color.black);
-        g.fillRect(pointxLeft, pointyUp, 26 * hudSize, lineSize);
-        g.fillRect(pointxRight, pointyUp, lineSize, 26 * hudSize);
-        g.fillRect(pointxLeft, pointyDown, 26 * hudSize, lineSize);
-        g.fillRect(pointxLeft, pointyUp, lineSize, 26 * hudSize);
-        
-        g.setColor(Color.red);
-        if(hudPercent <= 13) {
-            g.fillRect(startPoint, pointyUp, hudPercent * hudSize, lineSize);
-        }
-        else if(hudPercent > 13 && hudPercent <= 37) {
-            hudPercent -= 13;
-            g.fillRect(startPoint, pointyUp, 13 * hudSize, lineSize);
-            g.fillRect(pointxRight, pointyUp, lineSize, hudPercent * hudSize);
-        }
-        else if(hudPercent > 37 && hudPercent <= 63) {
-            hudPercent -= 37;
-            g.fillRect(startPoint, pointyUp, 13 * hudSize, lineSize);
-            g.fillRect(pointxRight, pointyUp, lineSize, 26 * hudSize);
-            g.fillRect(pointxRight - hudPercent * hudSize + lineSize, pointyDown, hudPercent * hudSize, lineSize);
-        }
-        else if(hudPercent > 63 && hudPercent <= 87) {
-            hudPercent -= 63;
-            g.fillRect(startPoint, pointyUp, 13 * hudSize, lineSize);
-            g.fillRect(pointxRight, pointyUp, lineSize, 26 * hudSize);
-            g.fillRect(pointxLeft, pointyDown, 26 * hudSize, lineSize);
-            g.fillRect(pointxLeft, pointyDown - hudPercent * hudSize, lineSize, hudPercent * hudSize + hudSize);
-        }
-        else if(hudPercent > 87 && hudPercent <= 100) {
-            hudPercent -= 87;
-            g.fillRect(startPoint, pointyUp, 13 * hudSize, lineSize);
-            g.fillRect(pointxRight, pointyUp, lineSize, 26 * hudSize);
-            g.fillRect(pointxLeft, pointyDown, 26 * hudSize, lineSize);
-            g.fillRect(pointxLeft, pointyUp, lineSize, 26 * hudSize);
-            g.fillRect(pointxLeft, pointyUp, hudPercent * hudSize + hudSize , lineSize);
-        }
-    }
-       
-    public void drawPlayerHP(int startX, int startY, int width, int heigth, Graphics g) {
-        g.setColor(Color.black);
-        g.fillRect(startX - 5, startY - 5, width + 10, heigth + 10);
-        g.setColor(Color.darkGray);
-        g.fillRect(startX, startY, width, heigth);
-        int percent =  player.getHpPercent(); 
-        g.setColor(new Color((int) (2.55 * (100 - percent)), 255 - (int) (2.55 * (100 - percent)), 0));
-        g.fillRect(startX, startY, width * percent / 100, heigth);
-    }
     
     @Override
     public void keyTyped(KeyEvent e) {
@@ -559,35 +328,43 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_W:
-                player.moveUp();
+                if(currentWindow == 11 && levelWindow.isLevelActive())
+                    levelWindow.getPlayer().moveUp();
             break;
 
             case KeyEvent.VK_S:
-                player.moveDown();
+                if(currentWindow == 11 && levelWindow.isLevelActive())
+                    levelWindow.getPlayer().moveDown();
             break;
 
             case KeyEvent.VK_A:
-                player.moveLeft();
+                if(currentWindow == 11 && levelWindow.isLevelActive())
+                    levelWindow.getPlayer().moveLeft();
             break;
 
             case KeyEvent.VK_D:
-                player.moveRight();
+                if(currentWindow == 11 && levelWindow.isLevelActive())
+                    levelWindow.getPlayer().moveRight();
             break;
             
             case KeyEvent.VK_1:
-                player.changeWeapon(1);
+                if(currentWindow == 11 && levelWindow.isLevelActive())
+                    levelWindow.getPlayer().changeWeapon(1);
             break;
             
             case KeyEvent.VK_2:
-                player.changeWeapon(2);
+                if(currentWindow == 11 && levelWindow.isLevelActive())
+                    levelWindow.getPlayer().changeWeapon(2);
             break;
             
             case KeyEvent.VK_3:
-                player.changeWeapon(3);
+                if(currentWindow == 11 && levelWindow.isLevelActive())
+                    levelWindow.getPlayer().changeWeapon(3);
             break;
             
             case KeyEvent.VK_SPACE:
-                player.useAbility();
+                if(currentWindow == 11 && levelWindow.isLevelActive())
+                    levelWindow.getPlayer().useAbility();
             break;
             
             case KeyEvent.VK_ESCAPE:
@@ -601,19 +378,23 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     public void keyReleased(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_W:
-                player.setMovingUp(false);
+                if(currentWindow == 11 && levelWindow.isLevelActive())
+                    levelWindow.getPlayer().setMovingUp(false);
             break;
 
             case KeyEvent.VK_S:
-                player.setMovingDown(false);
+                if(currentWindow == 11 && levelWindow.isLevelActive())
+                    levelWindow.getPlayer().setMovingDown(false);
             break;
 
             case KeyEvent.VK_A:
-                player.setMovingLeft(false);
+                if(currentWindow == 11 && levelWindow.isLevelActive())
+                    levelWindow.getPlayer().setMovingLeft(false);
             break;
 
             case KeyEvent.VK_D:
-                player.setMovingRight(false);
+                if(currentWindow == 11 && levelWindow.isLevelActive())
+                    levelWindow.getPlayer().setMovingRight(false);
             break;
 
             case KeyEvent.VK_SPACE:

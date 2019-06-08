@@ -86,35 +86,109 @@ public class Equipment {
        createModules();
    }
    
+   
+   int[] boosts;
     private void createTankBodies() {
-        int i = 1;
+        int i = 1; 
+        boosts = new int[12];
+        
+        for(int j = 0; j < 12; j++)
+            boosts[j] = 0;
         switch(tankBodiesTier[i]) {
             case 0:
-                addBody(new TankBody(500, 5, 3, 20, 1, 1), i, "Basic body", 0, 2000);
+                addBody(new TankBody(500, 5, 3, 20, 1, 1), i, "Basic body", 0, 2000, boosts);
                 break;  
             case 1:
-                addBody(new TankBody(500, 5, 3, 20, 1, 1), i, "Basic body", 1, 2000);
+                addBody(new TankBody(500, 5, 3, 20, 1, 1), i, "Basic body", 1, 2000, boosts);
                 break;
             case 2:
-                addBody(new TankBody(600, 7, 4, 25, 1, 2), i, "Basic body", 2, 2000);
+                addBody(new TankBody(600, 7, 4, 25, 1, 2), i, "Basic body", 2, 2000, boosts);
                 break;  
             case 3:
-                addBody(new TankBody(700, 10, 4, 30, 2, 2), i, "Basic body", 3, 2000);
+                addBody(new TankBody(700, 10, 4, 30, 2, 2), i, "Basic body", 3, 2000, boosts);
                 break;
             case 4:
-                addBody(new TankBody(800, 14, 5, 40, 3, 3), i, "Basic body", 4, 2000);
+                addBody(new TankBody(800, 14, 5, 40, 3, 3), i, "Basic body", 4, 2000, boosts);
+                break;
+        }
+        i++;
+        
+        for(int j = 0; j < 10; j++)
+            boosts[j] = 0;
+        switch(tankBodiesTier[i]) {
+            case 0:
+                setBoosts(5, 5, 2, 10, 10, 0);
+                addBody(new TankBody(300, 5, 3, 20, 1, 1), i, "Damage body", 0, 2000, boosts);
+                break;  
+            case 1:
+                setBoosts(5, 5, 2, 10, 10, 0);
+                addBody(new TankBody(350, 5, 3, 20, 1, 1), i, "Damage body", 1, 2000, boosts);
+                break;
+            case 2:
+                setBoosts(8, 5, 3, 10, 10, 0);
+                addBody(new TankBody(400, 7, 4, 25, 1, 2), i, "Damage body", 2, 2000, boosts);
+                break;  
+            case 3:
+                setBoosts(8, 8, 4, 10, 15, 0);
+                addBody(new TankBody(450, 10, 4, 30, 2, 2), i, "Damage body", 3, 2000, boosts);
+                break;
+            case 4:
+                setBoosts(10, 10, 5, 15, 20, 0);
+                addBody(new TankBody(500, 14, 5, 40, 3, 3), i, "Damage body", 4, 2000, boosts);
                 break;
         }
         i++;
     }
     
-    private void addBody(TankBody body, int id, String name, int tier, int cost) {
+    private void addBody(TankBody body, int id, String name, int tier, int cost, int[] statBoost) {
         body.setTier(tier);
         body.setName(name);
         body.setCost(cost);
+        int[] statType = new int[6];
+        int[] statEffect = new int[6];
+        for(int i = 0; i < 6; i++) {
+            statType[i] = statBoost[2*i];
+            statEffect[i] = statBoost[2*i + 1];
+        }
+        body.setStatBoostType(statType);
+        body.setStatBoostEffect(statEffect);
         tankBodies.set(id, body);
-
    }
+    
+   private void setBoosts(int dmg, int rld, int acc, int apen, int range, int cooldown) {
+       int i = 0;
+        if(dmg != 0) {
+            boosts[i] = 10;
+            boosts[i + 1] = dmg;
+            i += 2;
+        }
+        if(rld != 0) {
+            boosts[i] = 11;
+            boosts[i + 1] = rld;
+            i += 2;
+        }
+        if(acc != 0) {
+            boosts[i] = 12;
+            boosts[i + 1] = acc;
+            i += 2;
+        }
+        if(apen != 0) {
+            boosts[i] = 13;
+            boosts[i + 1] = apen;
+            i += 2;
+        }
+        if(range != 0) {
+            boosts[i] = 14;
+            boosts[i + 1] = range;
+            i += 2;
+        }
+        if(cooldown != 0) {
+            boosts[i] = 20;
+            boosts[i + 1] = cooldown;
+            i += 2;
+        }
+   }
+    
    
    private void createPrimaryWeapons() {
         int i = 1;
@@ -199,19 +273,19 @@ public class Equipment {
           
         switch(primaryWeaponsTier[i]) {
             case 0:
-                addPrimaryWeapon(new Weapon(10, 0.1, 30, 5, 200, 20, 16), i, "Flamethrower", 0, 1000, 3);
+                addPrimaryWeapon(new Weapon(10, 0.1, 70, 5, 150, 20, 8), i, "Flamethrower", 0, 1000, 3);
                 break;
             case 1:
-                addPrimaryWeapon(new Weapon(10, 0.1, 30, 5, 200, 20, 16), i, "Flamethrower", 1, 1000, 3);
+                addPrimaryWeapon(new Weapon(10, 0.1, 70, 5, 150, 20, 8), i, "Flamethrower", 1, 1000, 3);
                 break;    
             case 2:
-                addPrimaryWeapon(new Weapon(10, 0.1, 30, 5, 200, 20, 16), i, "Flamethrower", 2, 1000, 3);
+                addPrimaryWeapon(new Weapon(10, 0.1, 60, 5, 175, 20, 11), i, "Flamethrower", 2, 1000, 3);
                 break;
             case 3:
-                addPrimaryWeapon(new Weapon(10, 0.1, 30, 5, 200, 20, 16), i, "Flamethrower", 3, 1000, 3);
+                addPrimaryWeapon(new Weapon(10, 0.1, 50, 5, 200, 20, 15), i, "Flamethrower", 3, 1000, 3);
                 break;
             case 4:
-                addPrimaryWeapon(new Weapon(10, 0.1, 30, 5, 200, 20, 16), i, "Flamethrower", 4, 1000, 3);
+                addPrimaryWeapon(new Weapon(10, 0.1, 45, 5, 225, 20, 18), i, "Flamethrower", 4, 1000, 3);
                 break;
         }
         i++;
@@ -333,6 +407,44 @@ public class Equipment {
                 break;
             case 4:
                 addModule(new Module(1, 200, 2, 10, 0, 0), i, "Health module", 4, 2000);
+                break;
+        }
+        i++;
+        
+        switch(modulesTier[i]) {
+            case 0:
+                addModule(new Module(10, 5, 0, 0, 0, 0), i, "Damage boost", 0, 2000);
+                break;  
+            case 1:
+                addModule(new Module(10, 5, 0, 0, 0, 0), i, "Damage boost", 1, 2000);
+                break;
+            case 2:
+                addModule(new Module(10, 10, 0, 0, 0, 0), i, "Damage boost", 2, 2000);
+                break;  
+            case 3:
+                addModule(new Module(10, 15, 0, 0, 0, 0), i, "Damage boost", 3, 2000);
+                break;
+            case 4:
+                addModule(new Module(10, 20, 0, 0, 0, 0), i, "Damage boost", 4, 2000);
+                break;
+        }
+        i++;
+        
+        switch(modulesTier[i]) {
+            case 0:
+                addModule(new Module(3, 1, 0, 0, 0, 0), i, "Speed module", 0, 2000);
+                break;  
+            case 1:
+                addModule(new Module(3, 1, 0, 0, 0, 0), i, "Speed module", 1, 2000);
+                break;
+            case 2:
+                addModule(new Module(3, 2, 0, 0, 0, 0), i, "Speed module", 2, 2000);
+                break;  
+            case 3:
+                addModule(new Module(3, 3, 0, 0, 0, 0), i, "Speed module", 3, 2000);
+                break;
+            case 4:
+                addModule(new Module(3, 4, 0, 0, 0, 0), i, "Speed module", 4, 2000);
                 break;
         }
         i++;

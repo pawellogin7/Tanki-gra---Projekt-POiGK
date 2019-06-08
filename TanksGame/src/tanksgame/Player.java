@@ -43,8 +43,8 @@ public class Player {
         private Module module2 = new Module(0, 0, 0, 0, 0, 0);
         private Module module3 = new Module(0, 0, 0, 0, 0, 0);
         
-        Player(Equipment eq) {
-            activeTankSlot = 1;
+        Player(Equipment eq, int tankSlot) {
+            activeTankSlot = tankSlot;
             int[] tankEq = new int[9];
             switch(activeTankSlot) {
                 case 1:
@@ -66,7 +66,10 @@ public class Player {
                 secondaryChosen = false;
             else
                 secondaryChosen = true;
+            secondaryWeapon.setCooldown(0);
             ability = eq.getAbilities().get(tankEq[5]);
+            ability.setDuration(0);
+            ability.setCooldown(0);
             if(tankEq[5] == 0)
                 abilityChosen = false;
             else

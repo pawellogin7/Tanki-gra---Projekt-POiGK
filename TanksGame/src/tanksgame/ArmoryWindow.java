@@ -303,22 +303,21 @@ public class ArmoryWindow{
         
     //------------------------------------------------------------------------
     private void drawTabs(Graphics2D g2d) {
-            int tabButtonWidth = 67;
-            int tabButtonHeight = 67;
-            int tabButtonX;
-            int tabButtonY;
-            Color gray = Color.lightGray;
+            int buttonWidth = 67;
+            int buttonHeight = 67;
+            int buttonX;
+            int buttonY;
             Color outlineColor = Color.black;
             Color tierColor = Color.lightGray;
 
             
             //Bodies tab
-            tabButtonX = (295 - tabButtonWidth) / 2;
-            tabButtonY = 197;
+            buttonX = (295 - buttonWidth) / 2;
+            buttonY = 186;
             if(activeTab == 1)
                 outlineColor = Color.red;
-            else if(mouseX >= tabButtonX && mouseX < tabButtonX + tabButtonWidth 
-                     && mouseY >= tabButtonY && mouseY < tabButtonY + tabButtonHeight) {
+            else if(mouseX >= buttonX && mouseX < buttonX + buttonWidth 
+                     && mouseY >= buttonY && mouseY < buttonY + buttonHeight) {
                 if(mouseClicked == true) {
                     activeTab = 1;
                     outlineColor = Color.red;
@@ -349,22 +348,22 @@ public class ArmoryWindow{
                             break;
                 }
             }
-            drawButton(g2d, tabButtonX, tabButtonY, tabButtonWidth, tabButtonHeight, 3, tierColor, outlineColor);
+            drawButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 3, tierColor, outlineColor);
         
             
             //Primary weapons tab
             tierColor = Color.lightGray;
             outlineColor = Color.black;
             int eqSlots = primaryWeaponNumber;
-            tabButtonX = (295 - tabButtonWidth * eqSlots) / (eqSlots + 1);
-            tabButtonY += 125;
-            int jump = tabButtonX;
+            buttonX = (295 - buttonWidth * eqSlots) / (eqSlots + 1);
+            buttonY += 105;
+            int jump = buttonX;
             for(int i = 1; i <= eqSlots; i++) {
                 outlineColor = Color.black;
                 if(activeTab == 1 + i)
                     outlineColor = Color.red;
-                else if(mouseX >= tabButtonX && mouseX < tabButtonX + tabButtonWidth 
-                     && mouseY >= tabButtonY && mouseY < tabButtonY + tabButtonHeight) {
+                else if(mouseX >= buttonX && mouseX < buttonX + buttonWidth 
+                     && mouseY >= buttonY && mouseY < buttonY + buttonHeight) {
                     if(mouseClicked == true) {
                         activeTab = 1 + i;
                         outlineColor = Color.red;
@@ -412,19 +411,19 @@ public class ArmoryWindow{
                         tierColor = Color.orange;
                         break;
                 }
-                drawButton(g2d, tabButtonX, tabButtonY, tabButtonWidth, tabButtonHeight, 3, tierColor, outlineColor);
-                tabButtonX += (jump + tabButtonWidth);
+                drawButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 3, tierColor, outlineColor);
+                buttonX += (jump + buttonWidth);
             }
             
             //Secondary weapons tab
             tierColor = Color.lightGray;
             outlineColor = Color.black;
-            tabButtonX = (295 - tabButtonWidth) / 2;
-            tabButtonY += 125;
+            buttonX = (295 - buttonWidth) / 2;
+            buttonY += 105;
             if(activeTab == 5)
                     outlineColor = Color.red;
-            else if(mouseX >= tabButtonX && mouseX < tabButtonX + tabButtonWidth 
-                 && mouseY >= tabButtonY && mouseY < tabButtonY + tabButtonHeight) {
+            else if(mouseX >= buttonX && mouseX < buttonX + buttonWidth 
+                 && mouseY >= buttonY && mouseY < buttonY + buttonHeight) {
                 if(mouseClicked == true) {
                     activeTab = 5;
                     outlineColor = Color.red;
@@ -455,17 +454,17 @@ public class ArmoryWindow{
                             break;
                 }
             }
-            drawButton(g2d, tabButtonX, tabButtonY, tabButtonWidth, tabButtonHeight, 3, tierColor, outlineColor);
+            drawButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 3, tierColor, outlineColor);
             
             //Abilities tab
             tierColor = Color.lightGray;
             outlineColor = Color.black;
-            tabButtonX = (295 - tabButtonWidth) / 2;
-            tabButtonY += 125;
+            buttonX = (295 - buttonWidth) / 2;
+            buttonY += 105;
             if(activeTab == 6)
                     outlineColor = Color.red;
-            else if(mouseX >= tabButtonX && mouseX < tabButtonX + tabButtonWidth 
-                 && mouseY >= tabButtonY && mouseY < tabButtonY + tabButtonHeight) {
+            else if(mouseX >= buttonX && mouseX < buttonX + buttonWidth 
+                 && mouseY >= buttonY && mouseY < buttonY + buttonHeight) {
                 if(mouseClicked == true) {
                     activeTab = 6;
                     outlineColor = Color.red;
@@ -496,20 +495,20 @@ public class ArmoryWindow{
                             break;
                 }
             }
-            drawButton(g2d, tabButtonX, tabButtonY, tabButtonWidth, tabButtonHeight, 3, tierColor, outlineColor);
+            drawButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 3, tierColor, outlineColor);
             
             //Modules tab
             outlineColor = Color.black;
             eqSlots = moduleNumber;
-            tabButtonX = (295 - tabButtonWidth * eqSlots) / (eqSlots + 1);
-            tabButtonY += 125;
-            jump = tabButtonX;
+            buttonX = (295 - buttonWidth * eqSlots) / (eqSlots + 1);
+            buttonY += 105;
+            jump = buttonX;
             for(int i = 1; i <= eqSlots; i++) {
                 outlineColor = Color.black;
                 if(activeTab == 6 + i)
                     outlineColor = Color.red;
-                else if(mouseX >= tabButtonX && mouseX < tabButtonX + tabButtonWidth 
-                     && mouseY >= tabButtonY && mouseY < tabButtonY + tabButtonHeight) {
+                else if(mouseX >= buttonX && mouseX < buttonX + buttonWidth 
+                     && mouseY >= buttonY && mouseY < buttonY + buttonHeight) {
                     if(mouseClicked == true) {
                         activeTab = 6 + i;
                         outlineColor = Color.red;
@@ -557,22 +556,86 @@ public class ArmoryWindow{
                         tierColor = Color.orange;
                         break;
                 }
-                drawButton(g2d, tabButtonX, tabButtonY, tabButtonWidth, tabButtonHeight, 3, tierColor, outlineColor);
-                tabButtonX += (jump + tabButtonWidth);
+                drawButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 3, tierColor, outlineColor);
+                buttonX += (jump + buttonWidth);
             }
             
             Color black = Color.black;
-            int stringY = 170;
+            //Tab text
+            int stringY = 160;
             drawCenteredString(g2d, 0, stringY, 300, 22, black, "Tank Body");
-            stringY += 125;
+            stringY += 105;
             drawCenteredString(g2d, 0, stringY, 300, 22, black, "Primary Weapons");
-            stringY += 125;
+            stringY += 105;
             drawCenteredString(g2d, 0, stringY, 300, 22, black, "Secondary Weapon");
-            stringY += 125;
+            stringY += 105;
             drawCenteredString(g2d, 0, stringY, 300, 22, black, "Ability");
-            stringY += 125;
+            stringY += 105;
             drawCenteredString(g2d, 0, stringY, 300, 22, black, "Modules");
+            //Tank stats text
+            int stringX = 10;
+            g2d.setFont(new Font("Bold", Font.BOLD, 20));
+            stringY += 150;
+            g2d.drawString("Tank Stats:", stringX, stringY);
+            stringY += 25;
+            g2d.setFont(new Font("Bold", Font.BOLD, 16));
+            int value = 0;
+            value = eq.getTankBodies().get(tankEq[0]).getMaxHp() + checkTankStats(1);
+            g2d.drawString("HP:" + Integer.toString(value), stringX, stringY);
+            stringY += 22;
+            value = eq.getTankBodies().get(tankEq[0]).getRegen() + checkTankStats(2);
+            g2d.drawString("HP regen:" + Integer.toString(value), stringX, stringY);
+            stringY += 22;
+            value = eq.getTankBodies().get(tankEq[0]).getMoveSpeed() + checkTankStats(3);
+            g2d.drawString("Movement speed:" + Integer.toString(value), stringX, stringY);
+            stringY += 22;
+            value = eq.getTankBodies().get(tankEq[0]).getArmor() + checkTankStats(4);
+            g2d.drawString("Armor:" + Integer.toString(value), stringX, stringY);
+            if(checkTankStats(10) != 0) {
+                stringY += 22;
+                g2d.drawString("Damage boost: " + Integer.toString(checkTankStats(10))+ "%", stringX, stringY);
+            }
+            if(checkTankStats(11) != 0) {
+                stringY += 22;
+                g2d.drawString("Reload boost: " + Integer.toString(checkTankStats(11)) + "%", stringX, stringY);
+            }
+            if(checkTankStats(12) != 0) {
+                stringY += 22;
+                g2d.drawString("Accuracy boost: " + Integer.toString(checkTankStats(12)) + "%", stringX, stringY);
+            }
+            if(checkTankStats(13) != 0) {
+                stringY += 22;
+                g2d.drawString("Armor pen boost: " + Integer.toString(checkTankStats(13)) + "%", stringX, stringY);
+            }
+            if(checkTankStats(14) != 0) {
+                stringY += 22;
+                g2d.drawString("Range boost: " + Integer.toString(checkTankStats(14)) + "%", stringX, stringY);
+            }
+            if(checkTankStats(20) != 0) {
+                stringY += 22;
+                g2d.drawString("Cooldown reduction: " + Integer.toString(checkTankStats(20)) + "%", stringX, stringY);
+            }
     }
+    
+    private int checkTankStats(int statType) {
+            int statEffect = 0;
+            for(int i = 0; i < 6; i++) {
+                if(eq.getTankBodies().get(tankEq[0]).getStatBoostType()[i] == statType) {
+                    statEffect += eq.getTankBodies().get(tankEq[0]).getStatBoostEffect()[i];
+                }
+            }
+            
+            for(int i = 6; i <= 8; i++) {
+                if(eq.getModules().get(tankEq[i]).getStat1Type() == statType)
+                  statEffect += eq.getModules().get(tankEq[i]).getStat1Effect(); 
+                else if(eq.getModules().get(tankEq[i]).getStat2Type() == statType)
+                  statEffect += eq.getModules().get(tankEq[i]).getStat2Effect();
+                else if(eq.getModules().get(tankEq[i]).getStat3Type() == statType)
+                  statEffect += eq.getModules().get(tankEq[i]).getStat3Effect();
+            }
+            
+            return statEffect;
+        }
     
     
     //----------------------------------------------------------------------------
@@ -621,6 +684,14 @@ public class ArmoryWindow{
                 g2d.drawString("Armor: " + Integer.toString(body.getArmor()), 1120, stringY);
                 stringY += 35;
                 g2d.drawString("Movement speed: " + Integer.toString(body.getMoveSpeed()), 1120, stringY);
+                for(int i = 0; i < 6; i++) {
+                    int type = body.getStatBoostType()[i];
+                    if(type != 0) {
+                        stringY += 35;
+                        g2d.drawString(body.getStatString(i), 1120, stringY);
+                    }    
+                    
+                }
                 break;
             case 2:
                 Weapon weapon = eq.getPrimaryWeapons().get(activeComponent);
