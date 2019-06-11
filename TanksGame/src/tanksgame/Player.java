@@ -1,6 +1,5 @@
 package tanksgame;
 
-import java.awt.Graphics;
 import java.util.ArrayList;
 /**
  *
@@ -9,7 +8,9 @@ import java.util.ArrayList;
 public class Player {
         //In Java, Class Variables should be private so that only its methods can change them.
 	private int centerX = 700;
-	private int centerY = 500;  
+	private int centerY = 500;
+        private int posX = 0;
+	private int posY = 0;
 	private int speedX = 0;
 	private int speedY = 0;
         
@@ -25,9 +26,9 @@ public class Player {
         private boolean movingRight = false;
         private boolean movingUp = false;
         private boolean movingDown = false;
+        private double bodyRotationAngle, turretRotationAngle;
+        private int mouseX, mouseY;
 
-        private static Background bg1 = TanksGame.getBg1();                 
-        private static Background bg2 = TanksGame.getBg2();
         private ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
         
         private TankBody body;
@@ -43,7 +44,12 @@ public class Player {
         private Module module2 = new Module(0, 0, 0, 0, 0, 0);
         private Module module3 = new Module(0, 0, 0, 0, 0, 0);
         
-        Player(Equipment eq, int tankSlot) {
+        Player(Equipment eq, int tankSlot, int positionX, int positionY) {
+            posX = positionX;
+            posY = positionY;
+            bodyRotationAngle = 0;
+            turretRotationAngle = 0;
+            
             activeTankSlot = tankSlot;
             int[] tankEq = new int[9];
             switch(activeTankSlot) {
@@ -178,7 +184,10 @@ public class Player {
             return statEffect;
         }
         
-	public void update() {
+	public void update(int mx, int my) {
+            mouseX = mx;
+            mouseY = my;
+            
             primaryWeapon.update();
             primaryWeapon1.update();
             primaryWeapon2.update();
@@ -190,20 +199,37 @@ public class Player {
             updateSpeed();
             updateRegen();
             
-            // Moves Character or Scrolls Background accordingly.
-            bg1.setSpeedX(speedX);
-            bg2.setSpeedX(speedX);
-            bg1.setSpeedY(speedY);
-            bg2.setSpeedY(speedY);
-            
+            updateAngles();
+            // Moves Character or Scrolls Background accordingly.           
 	}
         
         public void updateBackground() {
             updateSpeed();
-            bg1.setSpeedX(speedX);
-            bg2.setSpeedX(speedX);
-            bg1.setSpeedY(speedY);
-            bg2.setSpeedY(speedY);
+        }
+        
+        public void updateAngles() {
+            if(speedX > 0 && speedY == 0)
+                bodyRotationAngle = 180;
+            else if(speedX < 0 && speedY == 0)
+                bodyRotationAngle = 0;
+            else if(speedX == 0 && speedY > 0)
+                bodyRotationAngle = 90;
+            else if(speedX == 0 && speedY < 0)
+                bodyRotationAngle = -90;
+            else if(speedX > 0 && speedY > 0)
+                bodyRotationAngle = 135;
+            else if(speedX < 0 && speedY > 0)
+                bodyRotationAngle = 45;
+            else if(speedX < 0 && speedY < 0)
+                bodyRotationAngle = -45;
+            else if(speedX > 0 && speedY < 0)
+                bodyRotationAngle = -135;
+            else
+                bodyRotationAngle = bodyRotationAngle;
+            
+            int deltaX = mouseX - centerX;
+            int deltaY = mouseY - centerY;
+            turretRotationAngle = Math.atan2(deltaY , deltaX);
         }
         
         public void changeWeapon(int key) {
@@ -227,40 +253,36 @@ public class Player {
             }
         }
 
-        public void shootPrimary(double mouseX, double mouseY) {
+        public void shootPrimary() {
             if(primaryWeapon.getCooldown() == 0.0 && !status.isWeaponJammed())
             {
-                int gunX = centerX + 53;
-                int gunY = centerY - 9;
-                double deltaX = gunX - mouseX;
-                double deltaY = gunY - mouseY;
+                int gunX = centerX + (int) Math.round(93.0 * Math.cos(turretRotationAngle) );
+                int gunY = centerY + (int) Math.round(93.0 * Math.sin(turretRotationAngle) );
                 
                 if(primaryWeapon.getBullet_number() == 0) {
                 }
                 else if(primaryWeapon.getBullet_number() == 1)
-                     projectiles.add(primaryWeapon.getProjectile(gunX, gunY, deltaX, deltaY));
+                     projectiles.add(primaryWeapon.getProjectile(gunX, gunY, turretRotationAngle));
                 else {
                     for(int i = 1; i <= primaryWeapon.getBullet_number(); i++)
-                        projectiles.add(primaryWeapon.getProjectileShotgun(gunX, gunY, deltaX, deltaY, i));
+                        projectiles.add(primaryWeapon.getProjectileShotgun(gunX, gunY, turretRotationAngle, i));
                 }
             }
         }
         
-        public void shootSecondary(double mouseX, double mouseY) {
+        public void shootSecondary() {
             if(secondaryWeapon.getCooldown() == 0)
             {
-                int gunX = centerX + 53;
-                int gunY = centerY - 9;
-                double deltaX = gunX - mouseX;
-                double deltaY = gunY - mouseY;
+                int gunX = centerX + (int) Math.round(93.0 * Math.cos(turretRotationAngle) );
+                int gunY = centerY + (int) Math.round(93.0 * Math.sin(turretRotationAngle) );
                 
                 if(secondaryWeapon.getBullet_number() == 0) {
                 }
                 else if(secondaryWeapon.getBullet_number() == 1)
-                     projectiles.add(secondaryWeapon.getProjectile(gunX, gunY, deltaX, deltaY));
+                     projectiles.add(secondaryWeapon.getProjectile(gunX, gunY, turretRotationAngle));
                 else {
                     for(int i = 1; i <= secondaryWeapon.getBullet_number(); i++)
-                        projectiles.add(secondaryWeapon.getProjectileShotgun(gunX, gunY, deltaX, deltaY, i));
+                        projectiles.add(secondaryWeapon.getProjectileShotgun(gunX, gunY, turretRotationAngle, i));
                 }
             }
         }
@@ -351,6 +373,9 @@ public class Player {
                 speedY = speed;
             else if(movingUp )
                 speedY = -speed;
+            
+            posX -= speedX;
+            posY += speedY;      
         }
         
         public void updateRegen() {
@@ -598,6 +623,38 @@ public class Player {
 
     public boolean isSecondaryChosen() {
         return secondaryChosen;
+    }
+
+    public double getBodyRotationAngle() {
+        return bodyRotationAngle;
+    }
+
+    public void setBodyRotationAngle(double bodyRotationAngle) {
+        this.bodyRotationAngle = bodyRotationAngle;
+    }
+
+    public double getTurretRotationAngle() {
+        return turretRotationAngle;
+    }
+
+    public void setTurretRotationAngle(double turretRotationAngle) {
+        this.turretRotationAngle = turretRotationAngle;
+    }
+
+    public int getPosX() {
+        return posX;
+    }
+
+    public void setPosX(int posX) {
+        this.posX = posX;
+    }
+
+    public int getPosY() {
+        return posY;
+    }
+
+    public void setPosY(int posY) {
+        this.posY = posY;
     }
 
     

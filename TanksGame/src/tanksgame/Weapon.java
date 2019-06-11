@@ -37,33 +37,33 @@ public class Weapon {
         } 
     }
     
-    Projectile getProjectile(int startX, int startY, double deltaX, double deltaY) {
+    Projectile getProjectile(int startX, int startY, double turretAngle) {
         Random generator = new Random();
         double losuj = generator.nextDouble();
         boolean znak = generator.nextBoolean();
         double angle = 0;
         
         if(znak)
-            angle = Math.atan2(deltaY , deltaX) + (1.0 *(100 - accuracy) / 100.0) * losuj * Math.PI;
+            angle = turretAngle + (1.0 *(100 - accuracy) / 100.0) * losuj * Math.PI;
         else
-            angle = Math.atan2(deltaY , deltaX) - (1.0 * (100 - accuracy) / 100.0) * losuj * Math.PI;       
+            angle = turretAngle - (1.0 * (100 - accuracy) / 100.0) * losuj * Math.PI;       
      
         cooldown = reload;
         Projectile proj = new Projectile(startX, startY, angle, bullet_velocity, range, damage, armorPen, projectileType);
         return proj;
     }
     
-    Projectile getProjectileShotgun(int startX, int startY, double deltaX, double deltaY, int proj_id) {
+    Projectile getProjectileShotgun(int startX, int startY, double turretAngle, int proj_id) {
         double angle = 0;
         if(bullet_number % 2 == 0)
         {
             double jump = 1.0 * (100 - accuracy) / 100.0 / (bullet_number - 1) * Math.PI;
-            angle = Math.atan2(deltaY , deltaX) - jump * 1.0 * (proj_id - bullet_number / 2 - 1);
+            angle = turretAngle - jump * 1.0 * (proj_id - bullet_number / 2 - 1);
         }
         else
         {
             double jump = 1.0 * (100 - accuracy) / 100.0 / (bullet_number - 1) * Math.PI;
-            angle = Math.atan2(deltaY , deltaX) - jump * 1.0 * (proj_id - (bullet_number - 1) / 2 - 1) * 1.0;
+            angle = turretAngle - jump * 1.0 * (proj_id - (bullet_number - 1) / 2 - 1) * 1.0;
         }
         
         cooldown = reload;

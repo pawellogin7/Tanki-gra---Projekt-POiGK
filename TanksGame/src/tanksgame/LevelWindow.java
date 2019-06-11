@@ -7,38 +7,81 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.geom.AffineTransform;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 
 public class LevelWindow {
-    private Image character, background, enemyTank; 
+    private Image character, background, enemyTank, turret; 
     private Image playerBullet, projectileFire, projectileLaser;
     private int currentLevel, mouseX, mouseY, buttonClicked;
-    private boolean mouse1Clicked, mouse2Clicked, mouseLocked, paused, tankSelected, levelActive;
+    private boolean mouse1Clicked, mouse2Clicked, mouseLocked, paused, levelActive;
+    private boolean tankSelected, tankSelectedP1, tankSelectedP2;
     private Equipment eq;
     private Player player;
     private static Background bg1, bg2;
     private EnemyTank t1, t2;
     
+    boolean multiplayer, host, connected;
+    private EnemyTank enemyMulti;
+    private String ip = "localHost";
+    private int port = 22222;
+    private Scanner scanner = new Scanner(System.in);
+    private Socket socket;
+    private DataOutputStream dos;
+    private DataInputStream dis;
+    private ServerSocket serverSocket;
+    
     LevelWindow(int level, Equipment equipment) {
         currentLevel = level;
         paused = true;
         tankSelected = false;
+        tankSelectedP1 = false;
+        tankSelectedP2 = false;
         levelActive = false;
         mouseLocked = true;
-        eq = equipment; 
-        player = new Player(eq, 1);
-        player.setMovingDown(false);
-        player.setMovingUp(false);
-        player.setMovingRight(false);
-        player.setMovingLeft(false);
-        player.update();
+        eq = equipment;        
         
         bg1 = new Background(0, 0);
-        bg2 = new Background(2160, 1000); 
-        t1 = new EnemyTank(340, 360);
-        t2 = new EnemyTank(700, 360);
+        
+        
+        if(currentLevel == 16) {
+            initializeServer();
+            multiplayer = true;
+            host = true;
+            player = new Player(eq, 1, 1000, 1000);
+            bg1.setBgX(player.getCenterX() - player.getPosX());
+            bg1.setBgY(player.getCenterY() - player.getPosY());
+            enemyMulti = new EnemyTank(0, 0);
+        }
+        else if(currentLevel == 17) {
+            multiplayer = true;
+            host = false;
+            player = new Player(eq, 1, 1500, 1000);
+            bg1.setBgX(player.getCenterX() - player.getPosX());
+            bg1.setBgY(player.getCenterY() - player.getPosY());
+            enemyMulti = new EnemyTank(0, 0);
+        }
+        else {
+            multiplayer = false;
+            host = false;
+            player = new Player(eq, 1, 1000, 1000);
+            bg1.setBgX(player.getCenterX() - player.getPosX());
+            bg1.setBgY(player.getCenterY() - player.getPosY());
+            t1 = new EnemyTank(1000 + bg1.getBgX(), 500 + bg1.getBgY());
+            t2 = new EnemyTank(700 + bg1.getBgX(), 360 + bg1.getBgY());
+        }
+        
+        connected = false;
     }
+    
     
     public void update(Graphics g, int mx, int my, boolean m1Click, boolean m2Click) {
         mouseX = mx;
@@ -51,23 +94,34 @@ public class LevelWindow {
             mouse1Clicked = false;
             mouse2Clicked = false;
         }
-        buttonClicked = 0;
+        buttonClicked = 0;       
         
+        if(multiplayer && host && !connected) {
+            listenForServerRequest();
+        }
+        else if(multiplayer && !host && !connected) {
+            if(!connect())
+                buttonClicked = 1;   
+        }
+        else if(multiplayer && connected) {
+            sendMultiplayerValues();
+            loadMultiplayerValues();
+        }
+        
+        bg1.update(player.getSpeedX(), player.getSpeedY());
         paint(g);
     }
 
+    //--------------Paint--------------------------
     public void paint(Graphics g) {        
         Graphics2D g2d = (Graphics2D) g.create();
-        TanksGame.getBg1().update();
-        TanksGame.getBg2().update();
-        g.drawImage(background, TanksGame.getBg1().getBgX(), TanksGame.getBg1().getBgY(), null);
-        g.drawImage(background, TanksGame.getBg2().getBgX(), TanksGame.getBg2().getBgY(), null);
+        g2d.drawImage(background, bg1.getBgX(), bg1.getBgY(), null);
         
         if(!tankSelected) {
             paused = true;
             drawTankSelection(g2d);
         }
-        else {
+        else if(!multiplayer){
             if(paused) {
                 player.setMovingDown(false);
                 player.setMovingUp(false);
@@ -77,22 +131,105 @@ public class LevelWindow {
             }
             else if(!paused) { 
                 if(mouse1Clicked)
-                    player.shootPrimary(mouseX, mouseY);
+                    player.shootPrimary();
                 if(mouse2Clicked)
-                    player.shootSecondary(mouseX, mouseY);
+                    player.shootSecondary();
                 updateProjectiles();
-                player.update(); 
+                player.update(mouseX, mouseY); 
             }
-            t1.update();
-            t2.update();
+            t1.update(bg1.getSpeedX(), bg1.getSpeedY());
+            t2.update(bg1.getSpeedX(), bg1.getSpeedY());
             drawLevel1(g2d);
             if(paused)
                 drawPauseMenu(g2d);
         }
-        
+        else if(multiplayer) {
+            if(paused) {
+                player.setMovingDown(false);
+                player.setMovingUp(false);
+                player.setMovingRight(false);
+                player.setMovingLeft(false);
+                player.updateBackground();
+            }
+            else if(!paused) { 
+                if(mouse1Clicked)
+                    player.shootPrimary();
+                if(mouse2Clicked)
+                    player.shootSecondary();
+                updateProjectiles();
+                player.update(mouseX, mouseY); 
+            }
+            updateMultiValues();
+            drawLevelMulti(g2d);
+            if(paused)
+                drawPauseMenu(g2d);
+        }
+            
     }
     
-
+    //--------Multiplayer methods-------------------
+    private void listenForServerRequest() {
+        Socket socket = null;
+        try {
+            socket = serverSocket.accept();
+            dos = new DataOutputStream(socket.getOutputStream());
+            dis = new DataInputStream(socket.getInputStream());
+            connected = true;
+        }
+        catch (IOException e) {   
+        }
+    }
+    
+    private boolean connect() {
+        try {
+            socket = new Socket(ip, port);
+            dos = new DataOutputStream(socket.getOutputStream());
+            dis = new DataInputStream(socket.getInputStream());
+            connected = true;
+        }
+        catch(IOException e) {
+            return false;
+        }
+        return true;
+    }
+    
+    private void initializeServer() {
+        try {
+            serverSocket = new ServerSocket(port, 8, InetAddress.getByName(ip));
+        }
+        catch(IOException e) { 
+        }
+    }
+    
+    private void loadMultiplayerValues() {
+        try {
+            int t1X = dis.readInt();
+            enemyMulti.setCenterX(t1X + bg1.getBgX());
+            int t1Y = dis.readInt();
+            enemyMulti.setCenterY(t1Y + bg1.getBgY());
+            double bodyAngle = dis.readDouble();
+            enemyMulti.setBodyRotationAngle(bodyAngle);
+            double turretAngle = dis.readDouble();
+            enemyMulti.setTurretRotationAngle(turretAngle);
+        }
+        catch (IOException e) {   
+        }
+    }
+    
+    private void sendMultiplayerValues() {
+        try {
+            dos.writeInt(player.getPosX());
+            dos.writeInt(player.getPosY());
+            dos.writeDouble(player.getBodyRotationAngle());
+            dos.writeDouble(player.getTurretRotationAngle());
+            dos.flush();
+        }
+        catch (IOException e) {   
+        }
+    }
+    
+    
+    //------------Drawing level methods-----------------------
     private void updateProjectiles(){ 
         ArrayList projectiles = player.getProjectiles();
         for (int i = 0; i < projectiles.size(); i++) {
@@ -106,15 +243,34 @@ public class LevelWindow {
         }
     }
     
-    public void drawLevel(Graphics2D g2d) {
+    public void drawLevel(Graphics2D g2d) {   
+    }
+    
+    public void drawPlayer(Graphics2D g2d) {       
+        AffineTransform at = AffineTransform.getTranslateInstance(player.getCenterX() - character.getWidth(null)/2, player.getCenterY() - character.getHeight(null)/2);
+        at.rotate(Math.toRadians(player.getBodyRotationAngle()), character.getWidth(null)/2, character.getHeight(null)/2);
+        g2d.drawImage(character, at, null);
         
+        AffineTransform at1 = AffineTransform.getTranslateInstance(player.getCenterX() - 7, player.getCenterY() - 8);
+        at1.rotate(player.getTurretRotationAngle(), 7, 8);
+        g2d.drawImage(turret, at1, null);
+    }
+    
+    public void drawEnemyMulti(Graphics2D g2d) {
+        AffineTransform at = AffineTransform.getTranslateInstance(enemyMulti.getCenterX() - enemyTank.getWidth(null)/2, enemyMulti.getCenterY() - enemyTank.getHeight(null)/2);
+        at.rotate(Math.toRadians(enemyMulti.getBodyRotationAngle()), enemyTank.getWidth(null)/2, enemyTank.getHeight(null)/2);
+        g2d.drawImage(enemyTank, at, null);
         
+        AffineTransform at1 = AffineTransform.getTranslateInstance(enemyMulti.getCenterX() - 7, enemyMulti.getCenterY() - 8);
+        at1.rotate(enemyMulti.getTurretRotationAngle(), 7, 8);
+        g2d.drawImage(turret, at1, null);
     }
     
     public void drawLevel1(Graphics2D g2d) {       
         g2d.drawImage(enemyTank, t1.getCenterX() - 64, t1.getCenterY() - 32, null);
         g2d.drawImage(enemyTank, t2.getCenterX() - 64, t2.getCenterY() - 32, null);
-        g2d.drawImage(character, player.getCenterX() - 64, player.getCenterY() - 32, null);
+        
+        drawPlayer(g2d);
         
         ArrayList projectiles = player.getProjectiles();
 	for (int i = 0; i < projectiles.size(); i++) {
@@ -122,6 +278,52 @@ public class LevelWindow {
             drawProjectile(p, g2d);
         }
         
+        drawHuds(g2d);
+        
+    }
+    
+    public void drawLevelMulti(Graphics2D g2d) {       
+        drawEnemyMulti(g2d);
+        drawPlayer(g2d);
+        
+        ArrayList projectiles = player.getProjectiles();
+	for (int i = 0; i < projectiles.size(); i++) {
+            Projectile p = (Projectile) projectiles.get(i);
+            drawProjectile(p, g2d);
+        }
+        
+        drawHuds(g2d);
+        
+    }
+    
+    public void updateMultiValues() {
+        
+    }
+    
+    public void drawProjectile(Projectile p, Graphics2D g2d) {
+        int typ = p.getProjectileType();
+        Image projectile = playerBullet;
+        switch(typ)
+        {
+            case 0:
+                projectile = playerBullet;
+                break;
+            case 1:
+                break;
+            case 2:
+                projectile = projectileLaser;
+                break;
+            case 3:
+                projectile = projectileFire;
+                break;
+        }
+        
+        AffineTransform at = AffineTransform.getTranslateInstance(p.getX(), p.getY() - projectile.getHeight(null)/2);
+        at.rotate(p.getProjectileRotateAngle(), projectile.getWidth(null)/2, projectile.getHeight(null)/2);
+        g2d.drawImage(projectile, at, null);
+    }
+    
+    public void drawHuds(Graphics2D g2d) {
         Color tierColor = Color.lightGray;
         int hudX = 370;
         int hudY = 890;
@@ -248,24 +450,6 @@ public class LevelWindow {
         
         
         drawPlayerHP(500, 903, 400, 30, g2d);
-    }
-    
-    public void drawProjectile(Projectile p, Graphics2D g2d) {
-        int typ = p.getProjectileType();
-        switch(typ)
-        {
-            case 0:
-              g2d.drawImage(playerBullet, p.getX(), p.getY(), null);
-              break;
-            case 1:
-              break;
-            case 2:
-              g2d.drawImage(projectileLaser, p.getX(), p.getY(), null);
-              break;
-            case 3:
-              g2d.drawImage(projectileFire, p.getX(), p.getY(), null);
-              break;
-        }
     }
 
     public void drawHud(int hudX, int hudY, int hudSize, int hudPercent, Graphics2D g2d, Color tierColor) {
@@ -613,7 +797,9 @@ public class LevelWindow {
                 outlineColor = Color.red;
                 if(mouse1Clicked == true) {
                     tankSelected = true;
-                    player = new Player(eq, k);
+                    int x = player.getPosX();
+                    int y = player.getPosY();
+                    player = new Player(eq, k, x, y);
                     paused = false;
                     mouseLocked = true;
                 }
@@ -779,6 +965,14 @@ public class LevelWindow {
 
     public void setButtonClicked(int buttonClicked) {
         this.buttonClicked = buttonClicked;
+    }
+
+    public Image getTurret() {
+        return turret;
+    }
+
+    public void setTurret(Image turret) {
+        this.turret = turret;
     }
     
     

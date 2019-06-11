@@ -2,14 +2,20 @@ package tanksgame;
 
 
 public class Enemy {
-   private int maxHealth, currentHealth, damage, speedX, speedY, centerX, centerY;
-   private Background bg = TanksGame.getBg1();
+   private int centerX, centerY;
+   private double bodyRotationAngle, turretRotationAngle;
+   private int maxHealth, currentHealth, damage, speedX, speedY;
     
-   public void update() {
+   Enemy() {
+       bodyRotationAngle = 0;
+       turretRotationAngle = 0;
+   }
+   
+   public void update(int bgSpdX, int bgSpdY) {
+    speedX = bgSpdX;
     centerX += speedX;
-    speedX = bg.getSpeedX();
+    speedY = -bgSpdY;
     centerY += speedY;
-    speedY = -bg.getSpeedY();
    }
 
    public void die() {
@@ -66,13 +72,32 @@ public class Enemy {
         this.centerY = centerY;
     }
 
-    public Background getBg() {
-        return bg;
+    public double getBodyRotationAngle() {
+        return bodyRotationAngle;
     }
 
-    public void setBg(Background bg) {
-        this.bg = bg;
+    public void setBodyRotationAngle(double bodyRotationAngle) {
+        this.bodyRotationAngle = bodyRotationAngle;
     }
+
+    public double getTurretRotationAngle() {
+        return turretRotationAngle;
+    }
+
+    public void setTurretRotationAngle(double turretRotationAngle) {
+        this.turretRotationAngle = turretRotationAngle;
+    }
+
+    
+
+    public int getSpeedY() {
+        return speedY;
+    }
+
+    public void setSpeedY(int speedY) {
+        this.speedY = speedY;
+    }
+
     
    
    

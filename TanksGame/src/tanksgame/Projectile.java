@@ -5,6 +5,7 @@ public class Projectile {
     private int x, y, speedX, speedY, distanceX, distanceY, velocity, damage, armor_pen, range;
     private boolean visible;
     private int projectileType;
+    private double projectileRotateAngle;
     private Background bg = TanksGame.getBg1();
     
     public Projectile(int startX, int startY, double angle, int vel, int rng, int dmg, int a_pen, int p_type){
@@ -12,6 +13,7 @@ public class Projectile {
         y = startY;
         velocity = vel;
         range = rng;
+        projectileRotateAngle = angle;
         
         speedX = (int) Math.round( 1.0 * velocity * Math.cos(angle) );
         speedY = (int) Math.round( 1.0 * velocity * Math.sin(angle) );
@@ -23,8 +25,8 @@ public class Projectile {
     }
     
     public void update(){
-        x += -speedX + bg.getSpeedX();
-        y += -speedY - bg.getSpeedY();
+        x += speedX + bg.getSpeedX();
+        y += speedY - bg.getSpeedY();
         distanceX += speedX;
         distanceY += speedY;
         int distance = (int) Math.round(Math.sqrt(1.0 * distanceX*distanceX + 1.0 * distanceY*distanceY));
@@ -88,5 +90,14 @@ public class Projectile {
     public void setProjectileType(int projectileType) {
         this.projectileType = projectileType;
     }
+
+    public double getProjectileRotateAngle() {
+        return projectileRotateAngle;
+    }
+
+    public void setProjectileRotateAngle(double projectileRotateAngle) {
+        this.projectileRotateAngle = projectileRotateAngle;
+    }
      
+    
 }
