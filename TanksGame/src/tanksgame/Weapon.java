@@ -37,7 +37,7 @@ public class Weapon {
         } 
     }
     
-    Projectile getProjectile(int startX, int startY, double turretAngle) {
+    Projectile getProjectile(int startX, int startY, double turretAngle, int team) {
         Random generator = new Random();
         double losuj = generator.nextDouble();
         boolean znak = generator.nextBoolean();
@@ -49,11 +49,11 @@ public class Weapon {
             angle = turretAngle - (1.0 * (100 - accuracy) / 100.0) * losuj * Math.PI;       
      
         cooldown = reload;
-        Projectile proj = new Projectile(startX, startY, angle, bullet_velocity, range, damage, armorPen, projectileType);
+        Projectile proj = new Projectile(startX, startY, angle, bullet_velocity, range, damage, armorPen, projectileType, team);
         return proj;
     }
     
-    Projectile getProjectileShotgun(int startX, int startY, double turretAngle, int proj_id) {
+    Projectile getProjectileShotgun(int startX, int startY, double turretAngle, int team, int proj_id) {
         double angle = 0;
         if(bullet_number % 2 == 0)
         {
@@ -67,7 +67,7 @@ public class Weapon {
         }
         
         cooldown = reload;
-        Projectile proj = new Projectile(startX, startY, angle, bullet_velocity, range, damage, armorPen, projectileType);
+        Projectile proj = new Projectile(startX, startY, angle, bullet_velocity, range, damage, armorPen, projectileType, team);
         return proj;
     }
     

@@ -2,18 +2,24 @@ package tanksgame;
 
 
 public class Projectile {
-    private int x, y, speedX, speedY, distanceX, distanceY, velocity, damage, armor_pen, range;
+    private int x, y, speedX, speedY, distanceX, distanceY; 
+    private int velocity, damage, armorPen, range;
     private boolean visible;
-    private int projectileType;
+    private int projectileType, team;
     private double projectileRotateAngle;
-    private Background bg = TanksGame.getBg1();
+    //For multiplayer only
+    private boolean newProjectile;
+    private double projectileAngle;
     
-    public Projectile(int startX, int startY, double angle, int vel, int rng, int dmg, int a_pen, int p_type){
+    public Projectile(int startX, int startY, double angle, int vel, int rng, int dmg, int a_pen, int p_type, int whichTeam){
         x = startX;
         y = startY;
         velocity = vel;
         range = rng;
+        damage = dmg;
+        armorPen = a_pen;
         projectileRotateAngle = angle;
+        team = whichTeam;
         
         speedX = (int) Math.round( 1.0 * velocity * Math.cos(angle) );
         speedY = (int) Math.round( 1.0 * velocity * Math.sin(angle) );
@@ -22,11 +28,14 @@ public class Projectile {
         distanceX = 0;
         distanceY = 0;
         projectileType = p_type;
+        
+        projectileAngle = angle;
+        newProjectile = true;
     }
     
-    public void update(){
-        x += speedX + bg.getSpeedX();
-        y += speedY - bg.getSpeedY();
+    public void update(int bgSpdX, int bgSpdY){
+        x += speedX + bgSpdX;
+        y += speedY - bgSpdY;
         distanceX += speedX;
         distanceY += speedY;
         int distance = (int) Math.round(Math.sqrt(1.0 * distanceX*distanceX + 1.0 * distanceY*distanceY));
@@ -75,12 +84,12 @@ public class Projectile {
         this.visible = visible;
     }
 
-    public int getArmor_pen() {
-        return armor_pen;
+    public int getArmorPen() {
+        return armorPen;
     }
 
-    public void setArmor_pen(int armor_pen) {
-        this.armor_pen = armor_pen;
+    public void setArmorPen(int armorPen) {
+        this.armorPen = armorPen;
     }
 
     public int getProjectileType() {
@@ -98,6 +107,55 @@ public class Projectile {
     public void setProjectileRotateAngle(double projectileRotateAngle) {
         this.projectileRotateAngle = projectileRotateAngle;
     }
+
+    public boolean isNewProjectile() {
+        return newProjectile;
+    }
+
+    public void setNewProjectile(boolean newProjectile) {
+        this.newProjectile = newProjectile;
+    }
+
+    public double getProjectileAngle() {
+        return projectileAngle;
+    }
+
+    public void setProjectileAngle(double projectileAngle) {
+        this.projectileAngle = projectileAngle;
+    }
+
+    public int getVelocity() {
+        return velocity;
+    }
+
+    public void setVelocity(int velocity) {
+        this.velocity = velocity;
+    }
+
+    public int getDamage() {
+        return damage;
+    }
+
+    public void setDamage(int damage) {
+        this.damage = damage;
+    }
+
+    public int getRange() {
+        return range;
+    }
+
+    public void setRange(int range) {
+        this.range = range;
+    }
+
+    public int getTeam() {
+        return team;
+    }
+
+    public void setTeam(int team) {
+        this.team = team;
+    }
      
+    
     
 }

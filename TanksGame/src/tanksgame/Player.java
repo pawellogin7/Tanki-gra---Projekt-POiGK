@@ -199,8 +199,7 @@ public class Player {
             updateSpeed();
             updateRegen();
             
-            updateAngles();
-            // Moves Character or Scrolls Background accordingly.           
+            updateAngles();          
 	}
         
         public void updateBackground() {
@@ -262,10 +261,10 @@ public class Player {
                 if(primaryWeapon.getBullet_number() == 0) {
                 }
                 else if(primaryWeapon.getBullet_number() == 1)
-                     projectiles.add(primaryWeapon.getProjectile(gunX, gunY, turretRotationAngle));
+                     projectiles.add(primaryWeapon.getProjectile(gunX, gunY, turretRotationAngle, 1));
                 else {
                     for(int i = 1; i <= primaryWeapon.getBullet_number(); i++)
-                        projectiles.add(primaryWeapon.getProjectileShotgun(gunX, gunY, turretRotationAngle, i));
+                        projectiles.add(primaryWeapon.getProjectileShotgun(gunX, gunY, turretRotationAngle, 1, i));
                 }
             }
         }
@@ -279,10 +278,10 @@ public class Player {
                 if(secondaryWeapon.getBullet_number() == 0) {
                 }
                 else if(secondaryWeapon.getBullet_number() == 1)
-                     projectiles.add(secondaryWeapon.getProjectile(gunX, gunY, turretRotationAngle));
+                     projectiles.add(secondaryWeapon.getProjectile(gunX, gunY, turretRotationAngle, 1));
                 else {
                     for(int i = 1; i <= secondaryWeapon.getBullet_number(); i++)
-                        projectiles.add(secondaryWeapon.getProjectileShotgun(gunX, gunY, turretRotationAngle, i));
+                        projectiles.add(secondaryWeapon.getProjectileShotgun(gunX, gunY, turretRotationAngle, 1, i));
                 }
             }
         }

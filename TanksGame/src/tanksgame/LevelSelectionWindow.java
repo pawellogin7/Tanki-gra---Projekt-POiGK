@@ -79,7 +79,39 @@ public class LevelSelectionWindow {
             }
             buttonX = 250;
             buttonY += 200;
-        }  
+        }
+        
+        buttonWidth = 250;
+        buttonHeight = 60;
+        buttonX = 300;
+        boolean mouseInArea = false;
+        Color outlineColor = Color.black;
+        if(mouseX >= buttonX && mouseX < buttonX + buttonWidth &&
+             mouseY >= buttonY && mouseY < buttonY + buttonHeight)
+            mouseInArea = true;
+        if(mouseInArea) {
+            outlineColor = Color.yellow;
+            if(mouseClicked)
+                buttonClicked = 16;
+        }
+        else
+            outlineColor = Color.black;
+        drawButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 5, Color.lightGray, outlineColor, outlineColor, "Host game");
+        
+        buttonX += 450;
+        mouseInArea = false;
+        outlineColor = Color.black;
+        if(mouseX >= buttonX && mouseX < buttonX + buttonWidth &&
+             mouseY >= buttonY && mouseY < buttonY + buttonHeight)
+            mouseInArea = true;
+        if(mouseInArea) {
+            outlineColor = Color.yellow;
+            if(mouseClicked)
+                buttonClicked = 17;
+        }
+        else
+            outlineColor = Color.black;
+        drawButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 5, Color.lightGray, outlineColor, outlineColor, "Join game");
     }
     
     public void drawButton(Graphics2D g2d, int x, int y, int width, int height, int outlineWidth, Color buttonColor, Color outlineColor, Color textColor, String text) {

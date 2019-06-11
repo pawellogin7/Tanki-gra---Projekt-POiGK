@@ -1,10 +1,14 @@
 package tanksgame;
 
+import java.util.ArrayList;
+
 
 public class Enemy {
    private int centerX, centerY;
    private double bodyRotationAngle, turretRotationAngle;
    private int maxHealth, currentHealth, damage, speedX, speedY;
+   
+   private ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
     
    Enemy() {
        bodyRotationAngle = 0;
@@ -88,14 +92,20 @@ public class Enemy {
         this.turretRotationAngle = turretRotationAngle;
     }
 
-    
-
     public int getSpeedY() {
         return speedY;
     }
 
     public void setSpeedY(int speedY) {
         this.speedY = speedY;
+    }
+
+    public ArrayList<Projectile> getProjectiles() {
+        return projectiles;
+    }
+
+    public void setProjectiles(ArrayList<Projectile> projectiles) {
+        this.projectiles = projectiles;
     }
 
     
