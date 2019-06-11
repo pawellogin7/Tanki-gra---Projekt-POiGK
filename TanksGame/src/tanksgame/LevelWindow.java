@@ -1038,7 +1038,9 @@ public class LevelWindow {
     public void setTurret(Image turret) {
         this.turret = turret;
     }
-    
+    public static Background getBg1(){
+        return bg1;
+    }
     
     
 }

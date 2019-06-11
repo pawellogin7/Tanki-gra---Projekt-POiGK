@@ -12,11 +12,14 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class TanksGame extends Applet implements Runnable, KeyListener, MouseListener, MouseMotionListener {
@@ -29,6 +32,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     private Weapon slowingShot, paralyzeShot, jamShot, stunShot, armorBreakShot;
     private Ability speedBoost, sprint, reloadBoost, regenBoost;
     private Image image, turret, character, background, cursor, enemyTank, playerBullet, projectileFire, projectileLaser;
+    public static Image wall, container;
     private Graphics second;
     private URL base;
     private int mouseX = 0;
@@ -43,12 +47,12 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     private boolean escKey = false;
     private int saveSlotSelected = 1;
     private int levelSelected = 1;
+    private ArrayList<Tile> tilearray = new ArrayList<Tile>();
+    private int bgSpdX = 0;
+    private int bgSpdY = 0;
     
     private Equipment equipment;
     
-    private int bgSpdX = 0;
-    private int bgSpdY = 0;
-	
     @Override
     public void init(){
         setSize(1400, 1000);
@@ -77,6 +81,8 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         playerBullet = getImage(base, "../data/pictures/playerBullet.png");
         projectileFire = getImage(base, "../data/pictures/projectileFire.png");
         projectileLaser = getImage(base, "../data/pictures/projectileLaser.png");
+        wall = getImage(base, "../data/pictures/wall.png");
+        container = getImage(base, "../data/pictures/container.png");
         
         equipment = new Equipment();
         loadFile(saveSlotSelected);
@@ -130,6 +136,14 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         setCursor(Toolkit.getDefaultToolkit().createCustomCursor(
             cursor, new Point(0,0),"custom cursor"));
         
+        // Initialize Tiles
+        try {
+            loadMap("data/map1.txt");
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
         Thread thread = new Thread(this);
         thread.start();
     }
@@ -148,6 +162,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     @Override
     public void run() {
         while (true) {
+            updateTiles();
             repaint();
             try {
                 Thread.sleep(17);
@@ -289,7 +304,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
                 if(currentWindowChanged) {
                     currentWindowChanged = false;
                     levelWindow = new LevelWindow(levelSelected, equipment);
-                    loadLevelPictures();
+                    loadLevelPictures();                    
                 }
                 
                 if(escKey) {
@@ -297,12 +312,9 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
                     escKey = false;
                 }
                 levelWindow.update(g, mouseX, mouseY, mouse1Down, mouse2Down);
-                
-		//-----
                 bgSpdX = levelWindow.getBg1().getSpeedX();
                 bgSpdY = levelWindow.getBg1().getSpeedY();
-		    
-		    
+                
                 switch(levelWindow.getButtonClicked()) {
                     case 0:
                         break;
@@ -310,12 +322,27 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
                         currentWindow = 0;
                         currentWindowChanged = true;
                 }
+                paintTiles(g);
                    
                 break;
             }
                     
         }
         
+    }
+    
+    private void updateTiles() {
+        for (int i = 0; i < tilearray.size(); i++) {
+            Tile t = (Tile) tilearray.get(i);
+            t.update(bgSpdX, bgSpdY);
+        }
+    }
+    
+    private void paintTiles(Graphics g) {
+        for (int i = 0; i < tilearray.size(); i++) {
+            Tile t = (Tile) tilearray.get(i);
+            g.drawImage(t.getTileImage(), t.getTileX(), t.getTileY(), this);
+        }
     }
     
     public void loadLevelPictures() {
@@ -696,7 +723,41 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         catch (IOException ex){
         }
     }
+    
+    private void loadMap(String filename) throws IOException {
+        ArrayList lines = new ArrayList();
+        int width = 0;
+        int height = 0;
 
+        BufferedReader reader = new BufferedReader(new FileReader(filename));
+        while (true) {
+            String line = reader.readLine();
+            // no more lines to read
+            if (line == null) {
+                reader.close();
+                break;
+            }
+
+            if (!line.startsWith("!")) {
+                lines.add(line);
+                width = Math.max(width, line.length());
+
+            }
+        }
+        height = lines.size();
+
+        for (int j = 0; j < 20; j++) {
+            String line = (String) lines.get(j);
+            for (int i = 0; i < width; i++) {
+                if (i < line.length()) {
+                    char ch = line.charAt(i);
+                    Tile t = new Tile(i, j, Character.getNumericValue(ch));
+                    tilearray.add(t);
+                }
+
+            }
+        }
+    }
     
     
 }
