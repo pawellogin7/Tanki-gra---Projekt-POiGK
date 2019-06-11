@@ -46,6 +46,9 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     
     private Equipment equipment;
     
+    private int bgSpdX = 0;
+    private int bgSpdY = 0;
+	
     @Override
     public void init(){
         setSize(1400, 1000);
@@ -295,6 +298,11 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
                 }
                 levelWindow.update(g, mouseX, mouseY, mouse1Down, mouse2Down);
                 
+		//-----
+                bgSpdX = levelWindow.getBg1().getSpeedX();
+                bgSpdY = levelWindow.getBg1().getSpeedY();
+		    
+		    
                 switch(levelWindow.getButtonClicked()) {
                     case 0:
                         break;
