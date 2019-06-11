@@ -8,8 +8,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -21,6 +23,7 @@ import java.util.Scanner;
 public class LevelWindow {
     private Image character, background, enemyTank, turret; 
     private Image playerBullet, projectileFire, projectileLaser;
+    private Image wall, container;
     private int currentLevel, mouseX, mouseY, buttonClicked;
     private boolean mouse1Clicked, mouse2Clicked, mouseLocked, paused, levelActive;
     private boolean tankSelected, tankSelectedP1, tankSelectedP2;
@@ -28,12 +31,12 @@ public class LevelWindow {
     private Player player;
     private static Background bg1, bg2;
     private EnemyTank t1, t2;
+    private ArrayList<Tile> tileArray = new ArrayList<Tile>();
     
     boolean multiplayer, host, connected;
     private EnemyTank enemyMulti;
     private String ip = "localHost";
     private int port = 22222;
-    private Scanner scanner = new Scanner(System.in);
     private Socket socket;
     private DataOutputStream dos;
     private DataInputStream dis;
@@ -50,7 +53,7 @@ public class LevelWindow {
         eq = equipment;        
         
         bg1 = new Background(0, 0);
-        
+        String mapPath = "";
         
         if(currentLevel == 16) {
             initializeServer();
@@ -60,6 +63,8 @@ public class LevelWindow {
             bg1.setBgX(player.getCenterX() - player.getPosX());
             bg1.setBgY(player.getCenterY() - player.getPosY());
             enemyMulti = new EnemyTank(0, 0);
+            
+            mapPath = "data/maps/mapLevel1.txt";
         }
         else if(currentLevel == 17) {
             multiplayer = true;
@@ -68,15 +73,26 @@ public class LevelWindow {
             bg1.setBgX(player.getCenterX() - player.getPosX());
             bg1.setBgY(player.getCenterY() - player.getPosY());
             enemyMulti = new EnemyTank(0, 0);
+            
+            mapPath = "data/maps/mapLevel1.txt";
         }
         else {
             multiplayer = false;
             host = false;
-            player = new Player(eq, 1, 1000, 1000);
+            player = new Player(eq, 1, 2000, 2000);
             bg1.setBgX(player.getCenterX() - player.getPosX());
             bg1.setBgY(player.getCenterY() - player.getPosY());
             t1 = new EnemyTank(1000 + bg1.getBgX(), 500 + bg1.getBgY());
             t2 = new EnemyTank(700 + bg1.getBgX(), 360 + bg1.getBgY());
+            
+            mapPath = "data/maps/mapLevel1.txt";
+        }
+        
+        //Load Map
+        try {
+            loadMap(mapPath);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         
         connected = false;
@@ -116,6 +132,8 @@ public class LevelWindow {
     public void paint(Graphics g) {        
         Graphics2D g2d = (Graphics2D) g.create();
         g2d.drawImage(background, bg1.getBgX(), bg1.getBgY(), null);
+        
+        updateTiles();
         
         if(!tankSelected) {
             paused = true;
@@ -298,7 +316,9 @@ public class LevelWindow {
         g2d.drawImage(turret, at1, null);
     }
     
-    public void drawLevel1(Graphics2D g2d) {       
+    public void drawLevel1(Graphics2D g2d) {
+        paintTiles(g2d);
+        
         g2d.drawImage(enemyTank, t1.getCenterX() - 64, t1.getCenterY() - 32, null);
         g2d.drawImage(enemyTank, t2.getCenterX() - 64, t2.getCenterY() - 32, null);
         
@@ -320,6 +340,76 @@ public class LevelWindow {
         
     }
     
+    //Loading map, updating and drawing tiles
+    private void updateTiles() {
+        for (int i = 0; i < tileArray.size(); i++) {
+            Tile t = (Tile) tileArray.get(i);
+            t.update(bg1.getSpeedX(), bg1.getSpeedY());
+        }
+    }
+    
+    private void paintTiles(Graphics2D g2d) {
+        for (int i = 0; i < tileArray.size(); i++) {
+            Tile t = (Tile) tileArray.get(i);
+            switch(t.getType()) {
+                case 0:
+                    break;
+                case 1:
+                    g2d.drawImage(wall, t.getTileX(), t.getTileY(), null);
+                    break;
+                case 2:
+                    g2d.drawImage(container, t.getTileX(), t.getTileY(), null);
+                    break;
+            }
+        }
+    }
+    
+    private void loadMap(String filename) throws IOException {
+        ArrayList lines = new ArrayList();
+        int width = 0;
+        int height = 0;
+
+        BufferedReader reader = new BufferedReader(new FileReader(filename));
+        while (true) {
+            String line = reader.readLine();
+            // no more lines to read
+            if (line == null) {
+                reader.close();
+                break;
+            }
+
+            if (!line.startsWith("!")) {
+                lines.add(line);
+                width = Math.max(width, line.length());
+
+            }
+        }
+        height = lines.size();
+
+        for (int j = 0; j < 20; j++) {
+            String line = (String) lines.get(j);
+            for (int i = 0; i < width; i++) {
+                if (i < line.length()) {
+                    char ch = line.charAt(i);
+                    int type = Character.getNumericValue(ch);
+                    Tile t = new Tile(bg1.getBgX() + 250 * i, bg1.getBgY() + 250 * j, type);
+                    //switch(type) {
+                    //    case 1:
+                    //        t.setTileImage(wall);
+                    //       break;
+                    //    case 2:
+                    //        t.setTileImage(container);
+                    //        break;
+                    //}
+                    
+                    
+                    tileArray.add(t);
+                }
+
+            }
+        }
+    }
+    
     //Update and draw projectiles methods
     private void updateProjectiles(){ 
         ArrayList projectiles = player.getProjectiles();
@@ -335,15 +425,15 @@ public class LevelWindow {
         
         if(multiplayer) {
             projectiles = enemyMulti.getProjectiles();
-        for (int i = 0; i < projectiles.size(); i++) {
-            Projectile p = (Projectile) projectiles.get(i);
-            if (p.isVisible() == true) {
-		p.update(bg1.getSpeedX(), bg1.getSpeedY());
+            for (int i = 0; i < projectiles.size(); i++) {
+                Projectile p = (Projectile) projectiles.get(i);
+                if (p.isVisible() == true) {
+                    p.update(bg1.getSpeedX(), bg1.getSpeedY());
+                }
+                else {
+                    projectiles.remove(i);
+                }
             }
-            else {
-		projectiles.remove(i);
-            }
-        }
         }
     }
     
@@ -1040,6 +1130,22 @@ public class LevelWindow {
     }
     public static Background getBg1(){
         return bg1;
+    }
+
+    public Image getWall() {
+        return wall;
+    }
+
+    public void setWall(Image wall) {
+        this.wall = wall;
+    }
+
+    public Image getContainer() {
+        return container;
+    }
+
+    public void setContainer(Image container) {
+        this.container = container;
     }
     
     

@@ -1,36 +1,21 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package tanksgame;
 
 import java.awt.Image;
 
-/**
- *
- * @author raffi
- */
+
 public class Tile {
 
     private int tileX, tileY, speedX, speedY, type;
-    public Image tileImage;
+    private Image tileImage;
 
     
 
     public Tile(int x, int y, int typeInt) {
-        tileX = x * 250;
-        tileY = y * 250;
+        tileX = x;
+        tileY = y;
 
         type = typeInt;
-
-        if (type == 1) {
-            tileImage = TanksGame.wall;
-        } else if (type == 2) {
-
-            tileImage = TanksGame.container;
-        }
-
     }
 
     public void update(int BackgroundSpeedX, int BackgroundSpeedY) {
@@ -64,5 +49,15 @@ public class Tile {
     public void setTileImage(Image tileImage) {
         this.tileImage = tileImage;
     }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+    
+    
 
 }
