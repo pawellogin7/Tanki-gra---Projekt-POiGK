@@ -10,13 +10,13 @@ public class Background {
        speedY = 0;
     }
     
-    public void update() {
+    public void update(int sX, int sY) {
+        speedX = sX;
+        speedY = sY;
         bgX += speedX;
         bgY -= speedY;
 
-        if (bgX <= -2160){
-            bgX += 4320;
-        }
+
     }
 
     public int getBgX() {
@@ -50,6 +50,7 @@ public class Background {
     public void setSpeedY(int speedY) {
         this.speedY = speedY;
     }
+
     
     
     

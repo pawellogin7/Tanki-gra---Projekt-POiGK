@@ -159,7 +159,6 @@ public class LevelWindow {
                 updateProjectiles();
                 player.update(mouseX, mouseY); 
             }
-            updateMultiValues();
             drawLevelMulti(g2d);
             if(paused)
                 drawPauseMenu(g2d);
@@ -211,6 +210,24 @@ public class LevelWindow {
             enemyMulti.setBodyRotationAngle(bodyAngle);
             double turretAngle = dis.readDouble();
             enemyMulti.setTurretRotationAngle(turretAngle);
+            int maxProjectilesNumber = dis.readInt();
+            for(int i = 0; i < maxProjectilesNumber; i++) {
+                //int startX = dis.readInt() + bg1.getBgX();
+                //int startY = dis.readInt() + bg1.getBgY();
+                int gunX = enemyMulti.getCenterX() + (int) Math.round(93.0 * Math.cos(enemyMulti.getTurretRotationAngle()) );
+                int gunY = enemyMulti.getCenterY() + (int) Math.round(93.0 * Math.sin(enemyMulti.getTurretRotationAngle()) );
+                int startX = gunX;
+                int startY = gunY;
+                double angle = dis.readDouble();
+                int velocity = dis.readInt();
+                int range = dis.readInt();
+                int damage = dis.readInt();
+                int armorPen = dis.readInt();
+                int projType = dis.readInt();
+                int team = 2;
+                Projectile p = new Projectile(startX, startY, angle, velocity, range, damage, armorPen, projType, team);
+                enemyMulti.getProjectiles().add(p);
+            }
         }
         catch (IOException e) {   
         }
@@ -222,6 +239,26 @@ public class LevelWindow {
             dos.writeInt(player.getPosY());
             dos.writeDouble(player.getBodyRotationAngle());
             dos.writeDouble(player.getTurretRotationAngle());
+            int numberOfProjectiles = 0; 
+            for(int i = 0; i < player.getProjectiles().size(); i++) {
+                Projectile p = (Projectile) player.getProjectiles().get(i);
+                if(p.isNewProjectile()) {
+                    numberOfProjectiles++;
+                    p.setNewProjectile(false);
+                }
+            }
+            dos.writeInt(numberOfProjectiles);
+            for(int i = 0; i < numberOfProjectiles; i++) {
+                Projectile p = (Projectile) player.getProjectiles().get(i);
+                //dos.writeInt(p.getX());
+                //dos.writeInt(p.getY());
+                dos.writeDouble(p.getProjectileAngle());
+                dos.writeInt(p.getVelocity());
+                dos.writeInt(p.getRange());
+                dos.writeInt(p.getDamage());
+                dos.writeInt(p.getArmorPen());
+                dos.writeInt(p.getProjectileType());
+            }
             dos.flush();
         }
         catch (IOException e) {   
@@ -230,19 +267,6 @@ public class LevelWindow {
     
     
     //------------Drawing level methods-----------------------
-    private void updateProjectiles(){ 
-        ArrayList projectiles = player.getProjectiles();
-        for (int i = 0; i < projectiles.size(); i++) {
-            Projectile p = (Projectile) projectiles.get(i);
-            if (p.isVisible() == true) {
-		p.update();
-            }
-            else {
-		projectiles.remove(i);
-            }
-        }
-    }
-    
     public void drawLevel(Graphics2D g2d) {   
     }
     
@@ -272,11 +296,8 @@ public class LevelWindow {
         
         drawPlayer(g2d);
         
-        ArrayList projectiles = player.getProjectiles();
-	for (int i = 0; i < projectiles.size(); i++) {
-            Projectile p = (Projectile) projectiles.get(i);
-            drawProjectile(p, g2d);
-        }
+        drawProjectiles(g2d);
+        
         
         drawHuds(g2d);
         
@@ -286,18 +307,52 @@ public class LevelWindow {
         drawEnemyMulti(g2d);
         drawPlayer(g2d);
         
+        drawProjectiles(g2d);
+        drawHuds(g2d);
+        
+    }
+    
+    //Update and draw projectiles methods
+    private void updateProjectiles(){ 
+        ArrayList projectiles = player.getProjectiles();
+        for (int i = 0; i < projectiles.size(); i++) {
+            Projectile p = (Projectile) projectiles.get(i);
+            if (p.isVisible() == true) {
+		p.update(bg1.getSpeedX(), bg1.getSpeedY());
+            }
+            else {
+		projectiles.remove(i);
+            }
+        }
+        
+        if(multiplayer) {
+            projectiles = enemyMulti.getProjectiles();
+        for (int i = 0; i < projectiles.size(); i++) {
+            Projectile p = (Projectile) projectiles.get(i);
+            if (p.isVisible() == true) {
+		p.update(bg1.getSpeedX(), bg1.getSpeedY());
+            }
+            else {
+		projectiles.remove(i);
+            }
+        }
+        }
+    }
+    
+    private void drawProjectiles(Graphics2D g2d) {
         ArrayList projectiles = player.getProjectiles();
 	for (int i = 0; i < projectiles.size(); i++) {
             Projectile p = (Projectile) projectiles.get(i);
             drawProjectile(p, g2d);
         }
         
-        drawHuds(g2d);
-        
-    }
-    
-    public void updateMultiValues() {
-        
+        if(multiplayer) {
+            projectiles = enemyMulti.getProjectiles();
+            for (int i = 0; i < projectiles.size(); i++) {
+                Projectile p = (Projectile) projectiles.get(i);
+                drawProjectile(p, g2d);
+            }
+        }
     }
     
     public void drawProjectile(Projectile p, Graphics2D g2d) {
@@ -322,7 +377,8 @@ public class LevelWindow {
         at.rotate(p.getProjectileRotateAngle(), projectile.getWidth(null)/2, projectile.getHeight(null)/2);
         g2d.drawImage(projectile, at, null);
     }
-    
+
+    //Update and draw hud methods
     public void drawHuds(Graphics2D g2d) {
         Color tierColor = Color.lightGray;
         int hudX = 370;
@@ -372,7 +428,6 @@ public class LevelWindow {
             }
             drawHud(hudX, hudY, hudSize, percent, g2d, tierColor); //secondary weapon hud
         }
-        
         
         //primary weapons hud
         hudX = 920;
@@ -512,6 +567,7 @@ public class LevelWindow {
     }
     
     
+    //-----------Drawing tank selection screen---------------------
     public void drawTankSelection(Graphics2D g2d) {
         int startX = 200;
         int startY = 50;
