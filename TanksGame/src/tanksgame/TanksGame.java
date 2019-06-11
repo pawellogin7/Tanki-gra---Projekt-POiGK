@@ -17,7 +17,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class TanksGame extends Applet implements Runnable, KeyListener, MouseListener, MouseMotionListener {
@@ -29,10 +28,9 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     private SaveSelectionWindow saveSelection;
     private Weapon slowingShot, paralyzeShot, jamShot, stunShot, armorBreakShot;
     private Ability speedBoost, sprint, reloadBoost, regenBoost;
-    private Image image, character, background, cursor, enemyTank, playerBullet, projectileFire, projectileLaser;
+    private Image image, turret, character, background, cursor, enemyTank, playerBullet, projectileFire, projectileLaser;
     private Graphics second;
     private URL base;
-    private static Background bg1, bg2;
     private int mouseX = 0;
     private int mouseY = 0;
     boolean mouse1Down = false;
@@ -44,6 +42,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     private boolean currentWindowChanged = false;
     private boolean escKey = false;
     private int saveSlotSelected = 1;
+    private int levelSelected = 1;
     
     private Equipment equipment;
     
@@ -69,6 +68,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
 	//Image Setups 
         background = getImage(base, "../data/pictures/background.png");
 	character = getImage(base, "../data/pictures/playerTank.png");
+        turret = getImage(base, "../data/pictures/tankTurret.png");
         cursor = getImage(base, "../data/pictures/cursor.png");
         enemyTank = getImage(base, "../data/pictures/enemyTank.png");
         playerBullet = getImage(base, "../data/pictures/playerBullet.png");
@@ -123,10 +123,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     }
     
     @Override
-    public void start() {
-        bg1 = new Background(0, 0);
-        bg2 = new Background(2160, 1000); 
-        
+    public void start() {   
         setCursor(Toolkit.getDefaultToolkit().createCustomCursor(
             cursor, new Point(0,0),"custom cursor"));
         
@@ -272,9 +269,10 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
                 switch(levelSelection.getButtonClicked()) {
                     case 0:
                         break;
-                    case 1:
+                    default:
                         currentWindow = 11;
                         currentWindowChanged = true;
+                        levelSelected = levelSelection.getButtonClicked();
                         break;
                 }
                 if(escKey) {
@@ -286,12 +284,8 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
             }
             case 11: { //Level creation window
                 if(currentWindowChanged) {
-                    bg1.setBgX(0);
-                    bg1.setBgY(0);
-                    bg2.setBgX(2160);
-                    bg2.setBgY(1000);
                     currentWindowChanged = false;
-                    levelWindow = new LevelWindow(1, equipment);
+                    levelWindow = new LevelWindow(levelSelected, equipment);
                     loadLevelPictures();
                 }
                 
@@ -319,6 +313,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     public void loadLevelPictures() {
         levelWindow.setBackground(background);
         levelWindow.setCharacter(character);
+        levelWindow.setTurret(turret);
         levelWindow.setEnemyTank(enemyTank);
         levelWindow.setPlayerBullet(playerBullet);
         levelWindow.setProjectileFire(projectileFire);
@@ -693,15 +688,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         catch (IOException ex){
         }
     }
+
     
-    public static Background getBg1() {
-        return bg1;
-    }
-
-    public static Background getBg2() {
-        return bg2;
-    }
-
- 
     
 }

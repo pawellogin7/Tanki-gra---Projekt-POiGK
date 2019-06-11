@@ -225,7 +225,12 @@ public class LevelWindow {
                 int armorPen = dis.readInt();
                 int projType = dis.readInt();
                 int team = 2;
+                
+                int speedX = dis.readInt();
+                int speedY = dis.readInt();
                 Projectile p = new Projectile(startX, startY, angle, velocity, range, damage, armorPen, projType, team);
+                p.setSpeedX(speedX);
+                p.setSpeedY(speedY);
                 enemyMulti.getProjectiles().add(p);
             }
         }
@@ -258,6 +263,9 @@ public class LevelWindow {
                 dos.writeInt(p.getDamage());
                 dos.writeInt(p.getArmorPen());
                 dos.writeInt(p.getProjectileType());
+                
+                dos.writeInt(p.getSpeedX());
+                dos.writeInt(p.getSpeedY());
             }
             dos.flush();
         }
