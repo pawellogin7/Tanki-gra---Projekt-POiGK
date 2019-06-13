@@ -1,5 +1,6 @@
 package tanksgame;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 
 
@@ -7,6 +8,7 @@ public class Enemy {
    private int centerX, centerY;
    private double bodyRotationAngle, turretRotationAngle;
    private int maxHealth, currentHealth, damage, speedX, speedY;
+   public Rectangle r = new Rectangle(0,0,0,0);
    
    private ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
     
@@ -16,10 +18,20 @@ public class Enemy {
    }
    
    public void update(int bgSpdX, int bgSpdY) {
-    speedX = bgSpdX;
-    centerX += speedX;
-    speedY = -bgSpdY;
-    centerY += speedY;
+       speedX = bgSpdX;
+       centerX += speedX;
+       speedY = -bgSpdY;
+       centerY += speedY;
+       r.setBounds(centerX - 64, centerY - 32, 128, 64);
+       if (r.intersects(Player.yellowRed)){
+           checkBulletCollision2();
+       }
+   }
+   
+   private void checkBulletCollision2() {
+       if (r.intersects(Player.rect) || r.intersects(Player.rect1) || r.intersects(Player.rect2) || r.intersects(Player.rect3)){
+           System.out.println("collision");          
+       }
    }
 
    public void die() {

@@ -3,13 +3,13 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Paweł/Documents/NetBeansProjects/TanksGame/src/tanksgame/Tile.java</file>
-            <file>file:/C:/Users/Paweł/Documents/NetBeansProjects/TanksGame/src/tanksgame/Projectile.java</file>
-            <file>file:/C:/Users/Paweł/Documents/NetBeansProjects/TanksGame/src/tanksgame/TanksGame.java</file>
-            <file>file:/C:/Users/Paweł/Documents/NetBeansProjects/TanksGame/src/tanksgame/Player.java</file>
-            <file>file:/C:/Users/Paweł/Documents/NetBeansProjects/TanksGame/src/tanksgame/Enemy.java</file>
-            <file>file:/C:/Users/Paweł/Documents/NetBeansProjects/TanksGame/src/tanksgame/Background.java</file>
-            <file>file:/C:/Users/Paweł/Documents/NetBeansProjects/TanksGame/src/tanksgame/LevelWindow.java</file>
+            <file>file:/C:/Users/raffi/Desktop/Tanki-gra---Projekt-POiGK-master/TanksGame/src/tanksgame/Enemy.java</file>
+            <file>file:/C:/Users/raffi/Desktop/Tanki-gra---Projekt-POiGK-master/TanksGame/src/tanksgame/TanksGame.java</file>
+            <file>file:/C:/Users/raffi/Desktop/Tanki-gra---Projekt-POiGK-master/TanksGame/src/tanksgame/LevelWindow.java</file>
+            <file>file:/C:/Users/raffi/Desktop/Tanki-gra---Projekt-POiGK-master/TanksGame/src/tanksgame/Tile.java</file>
+            <file>file:/C:/Users/raffi/Desktop/Tanki-gra---Projekt-POiGK-master/TanksGame/src/tanksgame/Projectile.java</file>
+            <file>file:/C:/Users/raffi/Desktop/Tanki-gra---Projekt-POiGK-master/TanksGame/src/tanksgame/Player.java</file>
+            <file>file:/C:/Users/raffi/Desktop/Tanki-gra---Projekt-POiGK-master/TanksGame/src/tanksgame/TankBody.java</file>
         </group>
     </open-files>
 </project-private>

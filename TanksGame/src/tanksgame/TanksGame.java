@@ -6,6 +6,7 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -698,6 +699,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         catch (IOException ex){
         }
     }
+    
     
     
     

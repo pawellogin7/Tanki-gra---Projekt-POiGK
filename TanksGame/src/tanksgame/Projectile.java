@@ -1,5 +1,7 @@
 package tanksgame;
 
+import java.awt.Rectangle;
+
 
 public class Projectile {
     private int x, y, speedX, speedY, distanceX, distanceY; 
@@ -7,6 +9,7 @@ public class Projectile {
     private boolean visible;
     private int projectileType, team;
     private double projectileRotateAngle;
+    private Rectangle r;
     //For multiplayer only
     private boolean newProjectile;
     private double projectileAngle;
@@ -20,6 +23,7 @@ public class Projectile {
         armorPen = a_pen;
         projectileRotateAngle = angle;
         team = whichTeam;
+        r = new Rectangle(0, 0, 0, 0);
         
         speedX = (int) Math.round( 1.0 * velocity * Math.cos(angle) );
         speedY = (int) Math.round( 1.0 * velocity * Math.sin(angle) );
@@ -38,9 +42,14 @@ public class Projectile {
         y += speedY - bgSpdY;
         distanceX += speedX;
         distanceY += speedY;
+        r.setBounds(x, y, 16, 16);
         int distance = (int) Math.round(Math.sqrt(1.0 * distanceX*distanceX + 1.0 * distanceY*distanceY));
         if (distance > range) {
             visible = false;
+            r = null;
+        }
+        if ( distance < range ){
+            checkBulletCollision();
         }
     }
 
@@ -154,6 +163,18 @@ public class Projectile {
 
     public void setTeam(int team) {
         this.team = team;
+    }
+	
+    private void checkBulletCollision() {
+        if(r.intersects(LevelWindow.t1.r)){
+            visible = false;
+//            TanksGame.score += 1;
+        }
+        
+        if (r.intersects(LevelWindow.t2.r)){
+            visible = false;
+//            TanksGame.score += 1;          
+        }
     }
      
     

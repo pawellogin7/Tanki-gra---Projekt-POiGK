@@ -7,6 +7,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -30,7 +31,9 @@ public class LevelWindow {
     private Equipment eq;
     private Player player;
     private static Background bg1, bg2;
-    private EnemyTank t1, t2;
+    public static EnemyTank t1, t2;
+    public static int score = 0;
+    private Font font = new Font(null, Font.BOLD, 30);
     private ArrayList<Tile> tileArray = new ArrayList<Tile>();
     
     boolean multiplayer, host, connected;
@@ -122,8 +125,7 @@ public class LevelWindow {
         else if(multiplayer && connected) {
             sendMultiplayerValues();
             loadMultiplayerValues();
-        }
-        
+        }        
         bg1.update(player.getSpeedX(), player.getSpeedY());
         paint(g);
     }
@@ -322,10 +324,17 @@ public class LevelWindow {
         g2d.drawImage(enemyTank, t1.getCenterX() - 64, t1.getCenterY() - 32, null);
         g2d.drawImage(enemyTank, t2.getCenterX() - 64, t2.getCenterY() - 32, null);
         
+        g2d.drawRect((int)player.rect1.getX(), (int)player.rect1.getY(), (int)player.rect1.getWidth(), (int)player.rect1.getHeight());
+        g2d.drawRect((int)player.rect.getX(), (int)player.rect.getY(), (int)player.rect.getWidth(), (int)player.rect.getHeight());    
+        g2d.drawRect((int)player.rect2.getX(), (int)player.rect2.getY(), (int)player.rect2.getWidth(), (int)player.rect2.getHeight()); 
+        g2d.drawRect((int)player.rect3.getX(), (int)player.rect3.getY(), (int)player.rect3.getWidth(), (int)player.rect3.getHeight()); 
         drawPlayer(g2d);
         
         drawProjectiles(g2d);
         
+        g2d.setFont(font);
+	g2d.setColor(Color.WHITE);
+	g2d.drawString(Integer.toString(score), 740, 30);	
         
         drawHuds(g2d);
         
@@ -351,7 +360,7 @@ public class LevelWindow {
     private void paintTiles(Graphics2D g2d) {
         for (int i = 0; i < tileArray.size(); i++) {
             Tile t = (Tile) tileArray.get(i);
-            switch(t.getType()) {
+                switch(t.getType()) {
                 case 0:
                     break;
                 case 1:
@@ -392,6 +401,7 @@ public class LevelWindow {
                 if (i < line.length()) {
                     char ch = line.charAt(i);
                     int type = Character.getNumericValue(ch);
+                    if ( type != 1 && type!= 2 && type!= 3 && type!= 4 && type!= 5 && type!= 6 && type!= 7 && type!= 8 && type!= 9) type = 0;
                     Tile t = new Tile(bg1.getBgX() + 250 * i, bg1.getBgY() + 250 * j, type);
                     //switch(type) {
                     //    case 1:

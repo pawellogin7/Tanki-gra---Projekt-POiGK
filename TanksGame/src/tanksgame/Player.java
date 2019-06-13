@@ -1,5 +1,7 @@
 package tanksgame;
 
+import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 /**
  *
@@ -43,6 +45,17 @@ public class Player {
         private Module module1 = new Module(0, 0, 0, 0, 0, 0);
         private Module module2 = new Module(0, 0, 0, 0, 0, 0);
         private Module module3 = new Module(0, 0, 0, 0, 0, 0);
+        
+        public static Rectangle rect = new Rectangle(0, 0, 0, 0);
+        public static Rectangle rect1 = new Rectangle(0, 0, 0, 0);
+        public static Rectangle rect2 = new Rectangle(0, 0, 0, 0);
+        public static Rectangle rect3 = new Rectangle(0, 0, 0, 0);
+        public static Rectangle yellowRed = new Rectangle(0, 0, 0, 0);
+        
+//        private ArrayList xVertex = new ArrayList();
+//        private ArrayList yVertex = new ArrayList();
+        
+//        public static Polygon poly = new Polygon( 0[], 0[], 0);
         
         Player(Equipment eq, int tankSlot, int positionX, int positionY) {
             posX = positionX;
@@ -199,7 +212,102 @@ public class Player {
             updateSpeed();
             updateRegen();
             
-            updateAngles();          
+            updateAngles();
+            rect.setRect(centerX - 64, centerY - 32, 1, 64);
+            rect1.setRect(centerX - 63, centerY - 32, 126, 1);
+            rect2.setRect(centerX + 63, centerY - 32, 1, 64);
+            rect3.setRect(centerX - 63, centerY + 31, 126, 1);
+            yellowRed.setRect(centerX - 200, centerY - 200, 400, 400);
+//            switch ((int)bodyRotationAngle){
+//                case -135:{
+//                    xVertex[0] = 0;
+//                    yVertex[0] = 0;
+//                    xVertex[1] = 0;
+//                    yVertex[1] = 0;
+//                    xVertex[2] = 0;
+//                    yVertex[2] = 0;
+//                    xVertex[3] = 0;
+//                    yVertex[3] = 0;
+//                    break;
+//                }
+//                case -90:{                    
+//                    xVertex[0] = 0;
+//                    yVertex[0] = 0;
+//                    xVertex[1] = 0;
+//                    yVertex[1] = 0;
+//                    xVertex[2] = 0;
+//                    yVertex[2] = 0;
+//                    xVertex[3] = 0;
+//                    yVertex[3] = 0;
+//                    break;
+//                }
+//                case -45:{
+//                    xVertex[0] = 0;
+//                    yVertex[0] = 0;
+//                    xVertex[1] = 0;
+//                    yVertex[1] = 0;
+//                    xVertex[2] = 0;
+//                    yVertex[2] = 0;
+//                    xVertex[3] = 0;
+//                    yVertex[3] = 0;
+//                    break;
+//                }
+//                case 0:{
+//                    xVertex[0] = 0;
+//                    yVertex[0] = 0;
+//                    xVertex[1] = 0;
+//                    yVertex[1] = 0;
+//                    xVertex[2] = 0;
+//                    yVertex[2] = 0;
+//                    xVertex[3] = 0;
+//                    yVertex[3] = 0;
+//                    break;
+//                }
+//                case 45:{
+//                    xVertex[0] = 0;
+//                    yVertex[0] = 0;
+//                    xVertex[1] = 0;
+//                    yVertex[1] = 0;
+//                    xVertex[2] = 0;
+//                    yVertex[2] = 0;
+//                    xVertex[3] = 0;
+//                    yVertex[3] = 0;
+//                    break;
+//                }
+//                case 90:{
+//                    xVertex[0] = 0;
+//                    yVertex[0] = 0;
+//                    xVertex[1] = 0;
+//                    yVertex[1] = 0;
+//                    xVertex[2] = 0;
+//                    yVertex[2] = 0;
+//                    xVertex[3] = 0;
+//                    yVertex[3] = 0;
+//                    break;
+//                }
+//                case 135:{
+//                    xVertex[0] = 0;
+//                    yVertex[0] = 0;
+//                    xVertex[1] = 0;
+//                    yVertex[1] = 0;
+//                    xVertex[2] = 0;
+//                    yVertex[2] = 0;
+//                    xVertex[3] = 0;
+//                    yVertex[3] = 0;
+//                    break;
+//                }
+//                case 180:{
+//                    xVertex[0] = 0;
+//                    yVertex[0] = 0;
+//                    xVertex[1] = 0;
+//                    yVertex[1] = 0;
+//                    xVertex[2] = 0;
+//                    yVertex[2] = 0;
+//                    xVertex[3] = 0;
+//                    yVertex[3] = 0;
+//                    break;
+//                }
+//            }
 	}
         
         public void updateBackground() {
