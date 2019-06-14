@@ -213,9 +213,9 @@ public class Player {
             updateRegen();
             
             updateAngles();
-            rect.setRect(centerX - 64, centerY - 32, 1, 64);
+            rect.setRect(centerX - 64, centerY - 31, 1, 64);
             rect1.setRect(centerX - 63, centerY - 32, 126, 1);
-            rect2.setRect(centerX + 63, centerY - 32, 1, 64);
+            rect2.setRect(centerX + 63, centerY - 31, 1, 64);
             rect3.setRect(centerX - 63, centerY + 31, 126, 1);
             yellowRed.setRect(centerX - 200, centerY - 200, 400, 400);
 //            switch ((int)bodyRotationAngle){

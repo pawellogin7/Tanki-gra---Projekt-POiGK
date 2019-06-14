@@ -125,7 +125,7 @@ public class LevelWindow {
         else if(multiplayer && connected) {
             sendMultiplayerValues();
             loadMultiplayerValues();
-        }        
+        } 
         bg1.update(player.getSpeedX(), player.getSpeedY());
         paint(g);
     }
@@ -354,9 +354,14 @@ public class LevelWindow {
         for (int i = 0; i < tileArray.size(); i++) {
             Tile t = (Tile) tileArray.get(i);
             t.update(bg1.getSpeedX(), bg1.getSpeedY());
+            Rectangle r = new Rectangle(0, 0, 0, 0);
+            r.setBounds(t.getTileX(), t.getTileY(), 250, 250);
+            if (r.intersects(Player.yellowRed) && t.getType() != 0){
+                checkCollision(Player.rect,Player.rect1,Player.rect2,Player.rect3, r, t);
+            }
         }
     }
-    
+        
     private void paintTiles(Graphics2D g2d) {
         for (int i = 0; i < tileArray.size(); i++) {
             Tile t = (Tile) tileArray.get(i);
@@ -1158,5 +1163,36 @@ public class LevelWindow {
         this.container = container;
     }
     
+    
+    public  void checkCollision(Rectangle rplayer, Rectangle rplayer1, Rectangle rplayer2, Rectangle rplayer3, Rectangle rTile, Tile t1){
+    	if (rplayer.intersects(rTile)){
+//            int jio = player.getCenterY();
+            player.setCenterX(t1.getTileX()+314);
+//            player.setCenterY(jio);
+//            player.setSpeedX(0);
+            System.out.println("kolizja");
+        }
+        if (rplayer1.intersects(rTile)){       
+//            int jio = player.getCenterX();     
+            player.setCenterY(t1.getTileY()+282);
+//            player.setCenterX(jio);
+//            player.setSpeedY(0);
+            System.out.println("kolizja1");
+        }
+        if (rplayer2.intersects(rTile)){
+//            int jio = player.getCenterY();
+            player.setCenterX(t1.getTileX()+64);
+//            player.setCenterY(jio);
+//            player.setSpeedX(0);
+            System.out.println("kolizja2");
+        }
+        if (rplayer3.intersects(rTile)){
+//            int jio = player.getCenterX();
+            player.setCenterY(t1.getTileY()-32);
+//            player.setCenterX(jio);
+//            player.setSpeedY(0);
+            System.out.println("kolizja3");
+        }
+    }
     
 }

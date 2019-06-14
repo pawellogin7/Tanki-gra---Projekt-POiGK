@@ -168,12 +168,10 @@ public class Projectile {
     private void checkBulletCollision() {
         if(r.intersects(LevelWindow.t1.r)){
             visible = false;
-//            TanksGame.score += 1;
         }
         
         if (r.intersects(LevelWindow.t2.r)){
-            visible = false;
-//            TanksGame.score += 1;          
+            visible = false;     
         }
     }
      
