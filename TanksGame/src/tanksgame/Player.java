@@ -1,6 +1,5 @@
 package tanksgame;
 
-import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 /**
@@ -23,6 +22,7 @@ public class Player {
         private double regenCooldown;
         private int activeWeapon, weaponsNumber, activeTankSlot;
         private boolean secondaryChosen, abilityChosen;
+        private boolean dead;
         
         private boolean movingLeft = false;
         private boolean movingRight = false;
@@ -52,16 +52,14 @@ public class Player {
         public static Rectangle rect3 = new Rectangle(0, 0, 0, 0);
         public static Rectangle yellowRed = new Rectangle(0, 0, 0, 0);
         
-//        private ArrayList xVertex = new ArrayList();
-//        private ArrayList yVertex = new ArrayList();
-        
-//        public static Polygon poly = new Polygon( 0[], 0[], 0);
+        public Rectangle r = new Rectangle(0,0,1,1);
         
         Player(Equipment eq, int tankSlot, int positionX, int positionY) {
             posX = positionX;
             posY = positionY;
             bodyRotationAngle = 0;
             turretRotationAngle = 0;
+            dead = false;
             
             activeTankSlot = tankSlot;
             int[] tankEq = new int[9];
@@ -212,102 +210,8 @@ public class Player {
             updateSpeed();
             updateRegen();
             
-            updateAngles();
-            rect.setRect(centerX - 64, centerY - 31, 1, 64);
-            rect1.setRect(centerX - 63, centerY - 32, 126, 1);
-            rect2.setRect(centerX + 63, centerY - 31, 1, 64);
-            rect3.setRect(centerX - 63, centerY + 31, 126, 1);
-            yellowRed.setRect(centerX - 200, centerY - 200, 400, 400);
-//            switch ((int)bodyRotationAngle){
-//                case -135:{
-//                    xVertex[0] = 0;
-//                    yVertex[0] = 0;
-//                    xVertex[1] = 0;
-//                    yVertex[1] = 0;
-//                    xVertex[2] = 0;
-//                    yVertex[2] = 0;
-//                    xVertex[3] = 0;
-//                    yVertex[3] = 0;
-//                    break;
-//                }
-//                case -90:{                    
-//                    xVertex[0] = 0;
-//                    yVertex[0] = 0;
-//                    xVertex[1] = 0;
-//                    yVertex[1] = 0;
-//                    xVertex[2] = 0;
-//                    yVertex[2] = 0;
-//                    xVertex[3] = 0;
-//                    yVertex[3] = 0;
-//                    break;
-//                }
-//                case -45:{
-//                    xVertex[0] = 0;
-//                    yVertex[0] = 0;
-//                    xVertex[1] = 0;
-//                    yVertex[1] = 0;
-//                    xVertex[2] = 0;
-//                    yVertex[2] = 0;
-//                    xVertex[3] = 0;
-//                    yVertex[3] = 0;
-//                    break;
-//                }
-//                case 0:{
-//                    xVertex[0] = 0;
-//                    yVertex[0] = 0;
-//                    xVertex[1] = 0;
-//                    yVertex[1] = 0;
-//                    xVertex[2] = 0;
-//                    yVertex[2] = 0;
-//                    xVertex[3] = 0;
-//                    yVertex[3] = 0;
-//                    break;
-//                }
-//                case 45:{
-//                    xVertex[0] = 0;
-//                    yVertex[0] = 0;
-//                    xVertex[1] = 0;
-//                    yVertex[1] = 0;
-//                    xVertex[2] = 0;
-//                    yVertex[2] = 0;
-//                    xVertex[3] = 0;
-//                    yVertex[3] = 0;
-//                    break;
-//                }
-//                case 90:{
-//                    xVertex[0] = 0;
-//                    yVertex[0] = 0;
-//                    xVertex[1] = 0;
-//                    yVertex[1] = 0;
-//                    xVertex[2] = 0;
-//                    yVertex[2] = 0;
-//                    xVertex[3] = 0;
-//                    yVertex[3] = 0;
-//                    break;
-//                }
-//                case 135:{
-//                    xVertex[0] = 0;
-//                    yVertex[0] = 0;
-//                    xVertex[1] = 0;
-//                    yVertex[1] = 0;
-//                    xVertex[2] = 0;
-//                    yVertex[2] = 0;
-//                    xVertex[3] = 0;
-//                    yVertex[3] = 0;
-//                    break;
-//                }
-//                case 180:{
-//                    xVertex[0] = 0;
-//                    yVertex[0] = 0;
-//                    xVertex[1] = 0;
-//                    yVertex[1] = 0;
-//                    xVertex[2] = 0;
-//                    yVertex[2] = 0;
-//                    xVertex[3] = 0;
-//                    yVertex[3] = 0;
-//                    break;
-//                }
-//            }
+            updateAngles();        
+            updateRectangles();
 	}
         
         public void updateBackground() {
@@ -337,6 +241,16 @@ public class Player {
             int deltaX = mouseX - centerX;
             int deltaY = mouseY - centerY;
             turretRotationAngle = Math.atan2(deltaY , deltaX);
+        }
+        
+        private void updateRectangles() {
+            rect.setRect(centerX - 64, centerY - 31, 1, 64);
+            rect1.setRect(centerX - 63, centerY - 32, 126, 1);
+            rect2.setRect(centerX + 63, centerY - 31, 1, 64);
+            rect3.setRect(centerX - 63, centerY + 31, 126, 1);
+            yellowRed.setRect(centerX - 200, centerY - 200, 400, 400);
+            
+            r.setBounds(centerX - 64, centerY - 32, 128, 64);
         }
         
         public void changeWeapon(int key) {
@@ -490,9 +404,32 @@ public class Player {
                 HP += 1.0 * regen * regenCooldown;
                 if(HP > maxHP)
                     HP = maxHP;
+                else if(HP <= 0) {
+                    HP = 0;
+                    dead = true;
+                }
                 regenCooldown = 0.0;
             }
             regenCooldown += 0.017;    
+        }
+        
+        
+        public void dealDamage(Projectile p) {
+            int projectileDamage = p.getDamage();
+            int damageReduction = armor - p.getArmorPen();
+       
+            if(damageReduction < 0)
+                damageReduction = 0;
+            if(damageReduction > projectileDamage / 2)
+                damageReduction = projectileDamage / 2;
+       
+            HP += -projectileDamage + damageReduction;
+            status.changeStatus(p.getStatus());
+            
+            if(HP <= 0) {
+                HP = 0;
+                dead = true;
+            }
         }
         
         public int getHpPercent() {
@@ -500,6 +437,8 @@ public class Player {
             percent = (int) Math.floor(1.0 * HP / maxHP * 100);
             if(percent < 1)
                 percent = 1;
+            if(dead)
+                percent = 0;
             return percent;
         }
         
@@ -762,6 +701,22 @@ public class Player {
 
     public void setPosY(int posY) {
         this.posY = posY;
+    }
+
+    public boolean isDead() {
+        return dead;
+    }
+
+    public void setDead(boolean dead) {
+        this.dead = dead;
+    }
+
+    public int getMaxHP() {
+        return maxHP;
+    }
+
+    public void setMaxHP(int maxHP) {
+        this.maxHP = maxHP;
     }
 
     

@@ -6,21 +6,17 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class TanksGame extends Applet implements Runnable, KeyListener, MouseListener, MouseMotionListener {
@@ -29,6 +25,7 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
     private ArmoryWindow armory;
     private LevelSelectionWindow levelSelection;
     private LevelWindow levelWindow;
+    private MultiplayerMenuWindow multiplayerMenu;
     private SaveSelectionWindow saveSelection;
     private Weapon slowingShot, paralyzeShot, jamShot, stunShot, armorBreakShot;
     private Ability speedBoost, sprint, reloadBoost, regenBoost;
@@ -207,6 +204,10 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
                         currentWindowChanged = true;
                         break;
                     case 4:
+                        currentWindow = 4;
+                        currentWindowChanged = true;
+                        break;
+                    case -1:
                         destroy();
                 }
                 if(escKey) {
@@ -290,15 +291,49 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
                 }
                 break;
             }
+            case 4: { //Multiplayer menu window
+                if(currentWindowChanged) {
+                    multiplayerMenu = new MultiplayerMenuWindow();
+                    currentWindowChanged = false;
+                }
+                multiplayerMenu.update(g, mouseX, mouseY, mouse1Down);
+                switch(multiplayerMenu.getButtonClicked()) {
+                    case 0:
+                        break;
+                    case 1:
+                        currentWindow = 11;
+                        currentWindowChanged = true;
+                        levelSelected = 100;
+                        break;
+                    case 2:
+                        currentWindow = 11;
+                        currentWindowChanged = true;
+                        levelSelected = 101;
+                        break;
+                }
+                if(escKey) {
+                    currentWindow = 0;
+                    escKey = false;
+                    currentWindowChanged = true;
+                }
+                break;
+            }
             case 11: { //Level creation window
                 if(currentWindowChanged) {
                     currentWindowChanged = false;
-                    levelWindow = new LevelWindow(levelSelected, equipment);
+                    levelWindow = new LevelWindow(levelSelected, equipment, character, enemyTank);
                     loadLevelPictures();                    
                 }
                 
                 if(escKey) {
-                    levelWindow.escPause();
+                    if(levelWindow.isLevelCompleted()) {
+                        equipment.setMoney(equipment.getMoney() + levelWindow.getMoneyReward());
+                        currentWindow = 0;
+                        currentWindowChanged = true;
+                    }
+                    else {
+                        levelWindow.escPause();
+                    }
                     escKey = false;
                 }
                 levelWindow.update(g, mouseX, mouseY, mouse1Down, mouse2Down);
@@ -699,7 +734,6 @@ public class TanksGame extends Applet implements Runnable, KeyListener, MouseLis
         catch (IOException ex){
         }
     }
-    
     
     
     

@@ -8,11 +8,14 @@ public class Projectile {
     private int velocity, damage, armorPen, range;
     private boolean visible;
     private int projectileType, team;
-    private double projectileRotateAngle;
+    private double projectileAngle;
+    StatusEffects status = new StatusEffects();
+    
     private Rectangle r;
+    
     //For multiplayer only
     private boolean newProjectile;
-    private double projectileAngle;
+    
     
     public Projectile(int startX, int startY, double angle, int vel, int rng, int dmg, int a_pen, int p_type, int whichTeam){
         x = startX;
@@ -21,8 +24,9 @@ public class Projectile {
         range = rng;
         damage = dmg;
         armorPen = a_pen;
-        projectileRotateAngle = angle;
+        projectileAngle = angle;
         team = whichTeam;
+        
         r = new Rectangle(0, 0, 0, 0);
         
         speedX = (int) Math.round( 1.0 * velocity * Math.cos(angle) );
@@ -33,7 +37,6 @@ public class Projectile {
         distanceY = 0;
         projectileType = p_type;
         
-        projectileAngle = angle;
         newProjectile = true;
     }
     
@@ -42,16 +45,30 @@ public class Projectile {
         y += speedY - bgSpdY;
         distanceX += speedX;
         distanceY += speedY;
+        
         r.setBounds(x, y, 16, 16);
         int distance = (int) Math.round(Math.sqrt(1.0 * distanceX*distanceX + 1.0 * distanceY*distanceY));
         if (distance > range) {
             visible = false;
             r = null;
         }
-        if ( distance < range ){
-            checkBulletCollision();
-        }
     }
+    
+    public boolean checkEnemyBulletCollision(Enemy enemy) {
+        if(team != 2 && r.intersects(enemy.r) && visible){
+            visible = false;
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean checkPlayerBulletCollision(Player player) {
+        if(team != 1 && r.intersects(player.r) && visible){
+            visible = false;
+            return true;
+        }
+        return false;
+    } 
 
     public int getX() {
         return x;
@@ -109,14 +126,6 @@ public class Projectile {
         this.projectileType = projectileType;
     }
 
-    public double getProjectileRotateAngle() {
-        return projectileRotateAngle;
-    }
-
-    public void setProjectileRotateAngle(double projectileRotateAngle) {
-        this.projectileRotateAngle = projectileRotateAngle;
-    }
-
     public boolean isNewProjectile() {
         return newProjectile;
     }
@@ -164,15 +173,13 @@ public class Projectile {
     public void setTeam(int team) {
         this.team = team;
     }
-	
-    private void checkBulletCollision() {
-        if(r.intersects(LevelWindow.t1.r)){
-            visible = false;
-        }
-        
-        if (r.intersects(LevelWindow.t2.r)){
-            visible = false;     
-        }
+
+    public StatusEffects getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusEffects status) {
+        this.status = status;
     }
      
     
