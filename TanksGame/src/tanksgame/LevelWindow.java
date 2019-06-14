@@ -18,7 +18,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 
 public class LevelWindow {
@@ -26,68 +25,69 @@ public class LevelWindow {
     private Image playerBullet, projectileFire, projectileLaser;
     private Image wall, container;
     private int currentLevel, mouseX, mouseY, buttonClicked;
-    private boolean mouse1Clicked, mouse2Clicked, mouseLocked, paused, levelActive;
+    private int moneyReward, maxMoneyReward, enemyNumber;
+    private boolean mouse1Clicked, mouse2Clicked, mouseLocked, paused, levelActive, levelCompleted;
     private boolean tankSelected, tankSelectedP1, tankSelectedP2;
     private Equipment eq;
     private Player player;
-    private static Background bg1, bg2;
-    public static EnemyTank t1, t2;
+    private static Background bg1;
+    private ArrayList<Tile> tileArray = new ArrayList<Tile>();
+    private ArrayList<Enemy> enemyArray = new ArrayList<Enemy>();
+    
     public static int score = 0;
     private Font font = new Font(null, Font.BOLD, 30);
-    private ArrayList<Tile> tileArray = new ArrayList<Tile>();
     
-    boolean multiplayer, host, connected;
-    private EnemyTank enemyMulti;
+    boolean multiplayer, host, connected, connectionError;
+    private Enemy enemyMulti;
     private String ip = "localHost";
     private int port = 22222;
     private Socket socket;
     private DataOutputStream dos;
     private DataInputStream dis;
     private ServerSocket serverSocket;
+    private int connectionErrorNumber = 0;
+    private int scorePlayer, scoreEnemy;
     
-    LevelWindow(int level, Equipment equipment) {
+    LevelWindow(int level, Equipment equipment, Image player1, Image enemy1) {
         currentLevel = level;
         paused = true;
         tankSelected = false;
         tankSelectedP1 = false;
         tankSelectedP2 = false;
         levelActive = false;
+        levelCompleted = false;
         mouseLocked = true;
-        eq = equipment;        
+        eq = equipment;
+        
+        character = player1;
+        enemyTank = enemy1;
+
+        connected = false;
+        connectionError = false;        
+        moneyReward = 0;
         
         bg1 = new Background(0, 0);
+        player = new Player(eq, 1, 0, 0);
         String mapPath = "";
         
-        if(currentLevel == 16) {
+        if(currentLevel == 100) {
             initializeServer();
             multiplayer = true;
             host = true;
-            player = new Player(eq, 1, 1000, 1000);
-            bg1.setBgX(player.getCenterX() - player.getPosX());
-            bg1.setBgY(player.getCenterY() - player.getPosY());
-            enemyMulti = new EnemyTank(0, 0);
             
-            mapPath = "data/maps/mapLevel1.txt";
+            mapPath = "data/maps/mapMulti1.txt";
         }
-        else if(currentLevel == 17) {
+        else if(currentLevel == 101) {
             multiplayer = true;
             host = false;
-            player = new Player(eq, 1, 1500, 1000);
-            bg1.setBgX(player.getCenterX() - player.getPosX());
-            bg1.setBgY(player.getCenterY() - player.getPosY());
-            enemyMulti = new EnemyTank(0, 0);
-            
-            mapPath = "data/maps/mapLevel1.txt";
+           
+            mapPath = "data/maps/mapMulti1.txt";
         }
         else {
             multiplayer = false;
             host = false;
-            player = new Player(eq, 1, 2000, 2000);
-            bg1.setBgX(player.getCenterX() - player.getPosX());
-            bg1.setBgY(player.getCenterY() - player.getPosY());
-            t1 = new EnemyTank(1000 + bg1.getBgX(), 500 + bg1.getBgY());
-            t2 = new EnemyTank(700 + bg1.getBgX(), 360 + bg1.getBgY());
             
+            maxMoneyReward = 2000;
             mapPath = "data/maps/mapLevel1.txt";
         }
         
@@ -97,10 +97,103 @@ public class LevelWindow {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
-        connected = false;
+        enemyNumber = enemyArray.size();
     }
     
+    //Loading map
+    private void loadMap(String filename) throws IOException {
+        ArrayList lines = new ArrayList();
+        int width = 0;
+        int height = 0;
+
+        BufferedReader reader = new BufferedReader(new FileReader(filename));
+        while (true) {
+            String line = reader.readLine();
+            // no more lines to read
+            if (line == null) {
+                reader.close();
+                break;
+            }
+
+            if (!line.startsWith("!")) {
+                lines.add(line);
+                width = Math.max(width, line.length());
+
+            }
+        }
+        height = lines.size();
+        
+        for (int j = 0; j < 20; j++) {
+            String line = (String) lines.get(j);
+            for (int i = 0; i < width; i++) {
+                if (i < line.length()) {
+                    char ch = line.charAt(i);
+                    if(ch == 'P') {
+                        if(!multiplayer || (multiplayer && host) ) {
+                            player = new Player(eq, 1, 250 * i + 125, 250 * j + 125);
+                            break;
+                        }
+                    }
+                    else if(ch == 'E') {
+                        if(multiplayer && !host) {
+                            player = new Player(eq, 1, 250 * i + 125, 250 * j + 125);
+                            break;
+                        }
+                    }      
+                }
+            }
+        }
+
+        bg1.setBgX(player.getCenterX() - player.getPosX());
+        bg1.setBgY(player.getCenterY() - player.getPosY());
+        
+        for (int j = 0; j < 20; j++) {
+            String line = (String) lines.get(j);
+            for (int i = 0; i < width; i++) {
+                if (i < line.length()) {
+                    char ch = line.charAt(i);
+                    int type = Character.getNumericValue(ch);
+                    if(type < 10) {
+                        Tile t = new Tile(bg1.getBgX() + 250 * i, bg1.getBgY() + 250 * j, type);
+                        tileArray.add(t);
+                    }
+                    else {
+                        type = 0;
+                        Tile t = new Tile(bg1.getBgX() + 250 * i, bg1.getBgY() + 250 * j, type);
+                        tileArray.add(t);
+                        
+                        switch(ch) {
+                            case 'E':
+                                if(multiplayer && host) {
+                                    Weapon weapon = new Weapon(35, 0.20, 91, 5, 800, 12, 1);
+                                    weapon.setProjectileType(0);
+                                    TankBody body = new TankBody(750, 30, 0, 30, 1, 1);
+                                    enemyMulti = new Enemy(bg1.getBgX() + 250 * i + 125, bg1.getBgY() + 250 * j + 125, body, weapon);
+                                }
+                                break;
+                            case 'P':
+                                if(multiplayer && !host) {
+                                    Weapon weapon = new Weapon(35, 0.20, 91, 5, 800, 12, 1);
+                                    weapon.setProjectileType(0);
+                                    TankBody body = new TankBody(750, 30, 0, 30, 1, 1);
+                                    enemyMulti = new Enemy(bg1.getBgX() + 250 * i + 125, bg1.getBgY() + 250 * j + 125, body, weapon);
+                                }
+                                break;
+                            case 'a':
+                                Weapon weapon = new Weapon(35, 0.20, 91, 5, 800, 12, 1);
+                                weapon.setProjectileType(0);
+                                TankBody body = new TankBody(750, 30, 0, 30, 1, 1);
+                                Enemy e = new Enemy(bg1.getBgX() + 250 * i + 125, bg1.getBgY() + 250 * j + 125, body, weapon);
+                                enemyArray.add(e);
+                                break;
+                        }
+                  
+                    }
+
+                }
+            }
+        }
+    }
     
     public void update(Graphics g, int mx, int my, boolean m1Click, boolean m2Click) {
         mouseX = mx;
@@ -116,7 +209,8 @@ public class LevelWindow {
         buttonClicked = 0;       
         
         if(multiplayer && host && !connected) {
-            listenForServerRequest();
+            Graphics2D g2d = (Graphics2D) g.create();
+            listenForServerRequest(g2d);
         }
         else if(multiplayer && !host && !connected) {
             if(!connect())
@@ -125,7 +219,8 @@ public class LevelWindow {
         else if(multiplayer && connected) {
             sendMultiplayerValues();
             loadMultiplayerValues();
-        } 
+        }
+        
         bg1.update(player.getSpeedX(), player.getSpeedY());
         paint(g);
     }
@@ -134,15 +229,16 @@ public class LevelWindow {
     public void paint(Graphics g) {        
         Graphics2D g2d = (Graphics2D) g.create();
         g2d.drawImage(background, bg1.getBgX(), bg1.getBgY(), null);
-        
         updateTiles();
+        paintTiles(g2d);
+        updateEnemies();
         
         if(!tankSelected) {
             paused = true;
             drawTankSelection(g2d);
         }
         else if(!multiplayer){
-            if(paused) {
+            if(paused || player.isDead()) {
                 player.setMovingDown(false);
                 player.setMovingUp(false);
                 player.setMovingRight(false);
@@ -150,16 +246,16 @@ public class LevelWindow {
                 player.updateBackground();
             }
             else if(!paused) { 
-                if(mouse1Clicked)
-                    player.shootPrimary();
-                if(mouse2Clicked)
-                    player.shootSecondary();
+                if(!player.isDead()) {
+                    if(mouse1Clicked)
+                        player.shootPrimary();
+                    if(mouse2Clicked)
+                        player.shootSecondary();
+                    player.update(mouseX, mouseY);
+                }
                 updateProjectiles();
-                player.update(mouseX, mouseY); 
             }
-            t1.update(bg1.getSpeedX(), bg1.getSpeedY());
-            t2.update(bg1.getSpeedX(), bg1.getSpeedY());
-            drawLevel1(g2d);
+            drawLevel(g2d);
             if(paused)
                 drawPauseMenu(g2d);
         }
@@ -176,8 +272,8 @@ public class LevelWindow {
                     player.shootPrimary();
                 if(mouse2Clicked)
                     player.shootSecondary();
+                player.update(mouseX, mouseY);
                 updateProjectiles();
-                player.update(mouseX, mouseY); 
             }
             drawLevelMulti(g2d);
             if(paused)
@@ -187,7 +283,7 @@ public class LevelWindow {
     }
     
     //--------Multiplayer methods-------------------
-    private void listenForServerRequest() {
+    private void listenForServerRequest(Graphics2D g2d) {
         Socket socket = null;
         try {
             socket = serverSocket.accept();
@@ -195,7 +291,8 @@ public class LevelWindow {
             dis = new DataInputStream(socket.getInputStream());
             connected = true;
         }
-        catch (IOException e) {   
+        catch (IOException e) {
+            drawWaitingForPlayersScreen(g2d);
         }
     }
     
@@ -232,6 +329,8 @@ public class LevelWindow {
             enemyMulti.setTurretRotationAngle(turretAngle);
             int maxProjectilesNumber = dis.readInt();
             for(int i = 0; i < maxProjectilesNumber; i++) {
+                connectionError = false;
+                
                 //int startX = dis.readInt() + bg1.getBgX();
                 //int startY = dis.readInt() + bg1.getBgY();
                 int gunX = enemyMulti.getCenterX() + (int) Math.round(93.0 * Math.cos(enemyMulti.getTurretRotationAngle()) );
@@ -254,12 +353,30 @@ public class LevelWindow {
                 enemyMulti.getProjectiles().add(p);
             }
         }
-        catch (IOException e) {   
+        catch (IOException e) {
+            if(host) {
+                try {
+                    socket.close();
+                }
+                catch(IOException ex) {
+                }
+            }
+            else {
+                try {
+                    socket.close();
+                }
+                catch(IOException ex) {
+                }
+            }
+            buttonClicked = 1;
+            connectionError = true;
         }
     }
     
     private void sendMultiplayerValues() {
         try {
+            connectionError = false;
+            
             dos.writeInt(player.getPosX());
             dos.writeInt(player.getPosY());
             dos.writeDouble(player.getBodyRotationAngle());
@@ -289,40 +406,36 @@ public class LevelWindow {
             }
             dos.flush();
         }
-        catch (IOException e) {   
+        catch (IOException e) {
+            if(host) {
+                try {
+                    socket.close();
+                }
+                catch(IOException ex) {
+                }
+            }
+            else {
+                try {
+                    socket.close();
+                }
+                catch(IOException ex) {
+                }
+            }
+            buttonClicked = 1;
+            connectionError = true;
         }
     }
     
+    private void drawWaitingForPlayersScreen(Graphics2D g2d) {
+        g2d.setColor(Color.white);
+        g2d.fillRect(0, 0, 1400, 1000);
+        
+        drawCenteredString(g2d, 0, 470, 1400, 24, Color.black, "Waiting for players...");
+    }
     
     //------------Drawing level methods-----------------------
-    public void drawLevel(Graphics2D g2d) {   
-    }
-    
-    public void drawPlayer(Graphics2D g2d) {       
-        AffineTransform at = AffineTransform.getTranslateInstance(player.getCenterX() - character.getWidth(null)/2, player.getCenterY() - character.getHeight(null)/2);
-        at.rotate(Math.toRadians(player.getBodyRotationAngle()), character.getWidth(null)/2, character.getHeight(null)/2);
-        g2d.drawImage(character, at, null);
-        
-        AffineTransform at1 = AffineTransform.getTranslateInstance(player.getCenterX() - 7, player.getCenterY() - 8);
-        at1.rotate(player.getTurretRotationAngle(), 7, 8);
-        g2d.drawImage(turret, at1, null);
-    }
-    
-    public void drawEnemyMulti(Graphics2D g2d) {
-        AffineTransform at = AffineTransform.getTranslateInstance(enemyMulti.getCenterX() - enemyTank.getWidth(null)/2, enemyMulti.getCenterY() - enemyTank.getHeight(null)/2);
-        at.rotate(Math.toRadians(enemyMulti.getBodyRotationAngle()), enemyTank.getWidth(null)/2, enemyTank.getHeight(null)/2);
-        g2d.drawImage(enemyTank, at, null);
-        
-        AffineTransform at1 = AffineTransform.getTranslateInstance(enemyMulti.getCenterX() - 7, enemyMulti.getCenterY() - 8);
-        at1.rotate(enemyMulti.getTurretRotationAngle(), 7, 8);
-        g2d.drawImage(turret, at1, null);
-    }
-    
-    public void drawLevel1(Graphics2D g2d) {
-        paintTiles(g2d);
-        
-        g2d.drawImage(enemyTank, t1.getCenterX() - 64, t1.getCenterY() - 32, null);
-        g2d.drawImage(enemyTank, t2.getCenterX() - 64, t2.getCenterY() - 32, null);
+    public void drawLevel(Graphics2D g2d) {
+        drawEnemies(g2d);
         
         g2d.drawRect((int)player.rect1.getX(), (int)player.rect1.getY(), (int)player.rect1.getWidth(), (int)player.rect1.getHeight());
         g2d.drawRect((int)player.rect.getX(), (int)player.rect.getY(), (int)player.rect.getWidth(), (int)player.rect.getHeight());    
@@ -331,23 +444,81 @@ public class LevelWindow {
         drawPlayer(g2d);
         
         drawProjectiles(g2d);
-        
-        g2d.setFont(font);
-	g2d.setColor(Color.WHITE);
-	g2d.drawString(Integer.toString(score), 740, 30);	
-        
         drawHuds(g2d);
         
+        singleplayerCheckForEnd(g2d);
     }
     
-    public void drawLevelMulti(Graphics2D g2d) {       
+    public void drawLevelMulti(Graphics2D g2d) {   
+        paintTiles(g2d);
         drawEnemyMulti(g2d);
         drawPlayer(g2d);
-        
         drawProjectiles(g2d);
         drawHuds(g2d);
-        
+        drawConnectionError(g2d);
     }
+    
+    private void drawConnectionError(Graphics2D g2d){
+        if(connectionError) {
+            connectionErrorNumber++;
+            drawCenteredString(g2d, 0, 470, 1400, 24, Color.red, "Unable to connect with opponent...");
+        }
+        else
+            connectionErrorNumber = 0;
+    } 
+    
+    //
+    private void singleplayerCheckForEnd(Graphics2D g2d) {
+        int levelEnd = 0;
+        if(enemyArray.isEmpty() && !player.isDead()) {
+            moneyReward = maxMoneyReward;
+            levelEnd = 1;
+        }
+        else if(player.isDead()) {
+            levelEnd = -1;
+            StatusEffects endGameStun = new StatusEffects();
+            endGameStun.setParalyzed(true);
+            endGameStun.setParalyzedDuration(10);
+            endGameStun.setWeaponJammed(true);
+            endGameStun.setWeaponJammedDuration(10);
+            player.setStatus(endGameStun);
+        }
+        
+        if(levelEnd != 0) {
+            int buttonX = 500;
+            int buttonY = 400;
+            int buttonWidth = 400;
+            int buttonHeight = 200;
+            drawButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 5, Color.lightGray, Color.black);
+            String levelString = "";
+            switch(levelEnd) {
+                case 1:
+                    levelString = "Level completed!";
+                    buttonY += 50;
+                    drawCenteredString(g2d, buttonX, buttonY, buttonWidth, 32, Color.black, levelString);
+                    buttonY += 60;
+                    levelString = "Money received: " + Integer.toString(moneyReward);
+                    drawCenteredString(g2d, buttonX, buttonY, buttonWidth, 24, Color.black, levelString);
+                    break;
+                case -1:
+                    levelString = "Level failed!";
+                    buttonY += 50;
+                    drawCenteredString(g2d, buttonX, buttonY, buttonWidth, 32, Color.black, levelString);
+                    buttonY += 60;
+                    levelString = "Money received: " + Integer.toString(moneyReward);
+                    drawCenteredString(g2d, buttonX, buttonY, buttonWidth, 24, Color.black, levelString);
+                    break;
+            }
+            levelCompleted = true;
+        }
+        else {
+            g2d.setColor(Color.black);
+            g2d.setFont(new Font(null, Font.BOLD, 26));
+            String text = "Enemies left: " + Integer.toString(enemyArray.size());
+            g2d.drawString(text, 20, 40);
+        }
+            
+    } 
     
     //Loading map, updating and drawing tiles
     private void updateTiles() {
@@ -357,15 +528,15 @@ public class LevelWindow {
             Rectangle r = new Rectangle(0, 0, 0, 0);
             r.setBounds(t.getTileX(), t.getTileY(), 250, 250);
             if (r.intersects(Player.yellowRed) && t.getType() != 0){
-                checkCollision(Player.rect,Player.rect1,Player.rect2,Player.rect3, r, t);
+                //checkCollision(Player.rect,Player.rect1,Player.rect2,Player.rect3, r, t);
             }
         }
     }
-        
+    
     private void paintTiles(Graphics2D g2d) {
         for (int i = 0; i < tileArray.size(); i++) {
             Tile t = (Tile) tileArray.get(i);
-                switch(t.getType()) {
+            switch(t.getType()) {
                 case 0:
                     break;
                 case 1:
@@ -378,51 +549,106 @@ public class LevelWindow {
         }
     }
     
-    private void loadMap(String filename) throws IOException {
-        ArrayList lines = new ArrayList();
-        int width = 0;
-        int height = 0;
-
-        BufferedReader reader = new BufferedReader(new FileReader(filename));
-        while (true) {
-            String line = reader.readLine();
-            // no more lines to read
-            if (line == null) {
-                reader.close();
-                break;
+    public  void checkCollision(Rectangle rplayer, Rectangle rplayer1, Rectangle rplayer2, Rectangle rplayer3, Rectangle rTile, Tile t1){
+    	if (rplayer.intersects(rTile)){
+//            int jio = player.getCenterY();
+            player.setCenterX(t1.getTileX()+314);
+//            player.setCenterY(jio);
+//            player.setSpeedX(0);
+            System.out.println("kolizja");
+        }
+        if (rplayer1.intersects(rTile)){       
+//            int jio = player.getCenterX();     
+            player.setCenterY(t1.getTileY()+282);
+//            player.setCenterX(jio);
+//            player.setSpeedY(0);
+            System.out.println("kolizja1");
+        }
+        if (rplayer2.intersects(rTile)){
+//            int jio = player.getCenterY();
+            player.setCenterX(t1.getTileX()+64);
+//            player.setCenterY(jio);
+//            player.setSpeedX(0);
+            System.out.println("kolizja2");
+        }
+        if (rplayer3.intersects(rTile)){
+//            int jio = player.getCenterX();
+            player.setCenterY(t1.getTileY()-32);
+//            player.setCenterX(jio);
+//            player.setSpeedY(0);
+            System.out.println("kolizja3");
+        }
+    }
+    
+    //Update and draw enemies and player
+    public void drawPlayer(Graphics2D g2d) {       
+        AffineTransform at = AffineTransform.getTranslateInstance(player.getCenterX() - character.getWidth(null)/2, player.getCenterY() - character.getHeight(null)/2);
+        at.rotate(Math.toRadians(player.getBodyRotationAngle()), character.getWidth(null)/2, character.getHeight(null)/2);
+        g2d.drawImage(character, at, null);
+        
+        AffineTransform at1 = AffineTransform.getTranslateInstance(player.getCenterX() - 7, player.getCenterY() - 8);
+        at1.rotate(player.getTurretRotationAngle(), 7, 8);
+        g2d.drawImage(turret, at1, null);
+        
+        int hpBarWidth = 40;
+        int hpBarHeight = 10;
+        int percent = player.getHpPercent();
+        int startX = player.getCenterX() - hpBarWidth / 2;
+        int startY = player.getCenterY() + 60 + hpBarHeight;
+        drawMiniHP(g2d, startX, startY, hpBarWidth, hpBarHeight, percent);
+    }
+    
+    private void updateEnemies() {
+        for(int i = 0; i < enemyArray.size(); i++) {
+            Enemy e = enemyArray.get(i);
+            if(!e.isDead()) {
+                e.update(bg1.getSpeedX(), bg1.getSpeedY(), player.getCenterX(), player.getCenterY());
             }
-
-            if (!line.startsWith("!")) {
-                lines.add(line);
-                width = Math.max(width, line.length());
-
+            else if(e.getProjectiles().size() == 0){
+                enemyArray.remove(i);
+                moneyReward += (int) (0.75 * maxMoneyReward / enemyNumber);
             }
         }
-        height = lines.size();
+    }
+    
+    private void drawEnemies(Graphics2D g2d) {
+        for(int i = 0; i < enemyArray.size(); i++) {
+            Enemy e = enemyArray.get(i);
+            
+            if(!e.isDead()) {
+                AffineTransform at = AffineTransform.getTranslateInstance(e.getCenterX() - enemyTank.getWidth(null)/2, e.getCenterY() - enemyTank.getHeight(null)/2);
+                at.rotate(Math.toRadians(e.getBodyRotationAngle()), enemyTank.getWidth(null)/2, enemyTank.getHeight(null)/2);
+                g2d.drawImage(enemyTank, at, null);
 
-        for (int j = 0; j < 20; j++) {
-            String line = (String) lines.get(j);
-            for (int i = 0; i < width; i++) {
-                if (i < line.length()) {
-                    char ch = line.charAt(i);
-                    int type = Character.getNumericValue(ch);
-                    if ( type != 1 && type!= 2 && type!= 3 && type!= 4 && type!= 5 && type!= 6 && type!= 7 && type!= 8 && type!= 9) type = 0;
-                    Tile t = new Tile(bg1.getBgX() + 250 * i, bg1.getBgY() + 250 * j, type);
-                    //switch(type) {
-                    //    case 1:
-                    //        t.setTileImage(wall);
-                    //       break;
-                    //    case 2:
-                    //        t.setTileImage(container);
-                    //        break;
-                    //}
-                    
-                    
-                    tileArray.add(t);
-                }
-
+                AffineTransform at1 = AffineTransform.getTranslateInstance(e.getCenterX() - 7, e.getCenterY() - 8);
+                at1.rotate(e.getTurretRotationAngle(), 7, 8);
+                g2d.drawImage(turret, at1, null);
+                
+                int hpBarWidth = 40;
+                int hpBarHeight = 10;
+                int percent = e.getHpPercent();
+                int startX = e.getCenterX() - hpBarWidth / 2;
+                int startY = e.getCenterY() + 60 + hpBarHeight / 2;
+                drawMiniHP(g2d, startX, startY, hpBarWidth, hpBarHeight, percent);
             }
         }
+    }
+    
+    public void drawEnemyMulti(Graphics2D g2d) {
+        AffineTransform at = AffineTransform.getTranslateInstance(enemyMulti.getCenterX() - enemyTank.getWidth(null)/2, enemyMulti.getCenterY() - enemyTank.getHeight(null)/2);
+        at.rotate(Math.toRadians(enemyMulti.getBodyRotationAngle()), enemyTank.getWidth(null)/2, enemyTank.getHeight(null)/2);
+        g2d.drawImage(enemyTank, at, null);
+        
+        AffineTransform at1 = AffineTransform.getTranslateInstance(enemyMulti.getCenterX() - 7, enemyMulti.getCenterY() - 8);
+        at1.rotate(enemyMulti.getTurretRotationAngle(), 7, 8);
+        g2d.drawImage(turret, at1, null);
+        
+        int hpBarWidth = 40;
+        int hpBarHeight = 10;
+        int percent = enemyMulti.getHpPercent();
+        int startX = enemyMulti.getCenterX() - hpBarWidth / 2;
+        int startY = enemyMulti.getCenterY() + 60 + hpBarHeight / 2;
+        drawMiniHP(g2d, startX, startY, hpBarWidth, hpBarHeight, percent);
     }
     
     //Update and draw projectiles methods
@@ -432,9 +658,30 @@ public class LevelWindow {
             Projectile p = (Projectile) projectiles.get(i);
             if (p.isVisible() == true) {
 		p.update(bg1.getSpeedX(), bg1.getSpeedY());
+                for(int j = 0; j < enemyArray.size(); j++) {
+                    Enemy e = enemyArray.get(j);
+                    if(p.checkEnemyBulletCollision(e) == true)
+                        e.dealDamage(p);
+                }
             }
             else {
 		projectiles.remove(i);
+            }
+        }
+        
+        for (int i = 0; i < enemyArray.size(); i++) {
+            Enemy e = enemyArray.get(i);
+            projectiles = e.getProjectiles();
+            for (int j = 0; j < projectiles.size(); j++) {
+                Projectile p = (Projectile) projectiles.get(j);
+                if (p.isVisible() == true) {
+                    p.update(bg1.getSpeedX(), bg1.getSpeedY());
+                    if(p.checkPlayerBulletCollision(player) == true)
+                        player.dealDamage(p);
+                }
+                else {
+                    projectiles.remove(j);
+                }  
             }
         }
         
@@ -457,6 +704,15 @@ public class LevelWindow {
 	for (int i = 0; i < projectiles.size(); i++) {
             Projectile p = (Projectile) projectiles.get(i);
             drawProjectile(p, g2d);
+        }
+        
+        for (int i = 0; i < enemyArray.size(); i++) {
+            Enemy e = enemyArray.get(i);
+            projectiles = e.getProjectiles();
+            for (int j = 0; j < projectiles.size(); j++) {
+                Projectile p = (Projectile) projectiles.get(j);
+                drawProjectile(p, g2d);
+            }
         }
         
         if(multiplayer) {
@@ -486,8 +742,8 @@ public class LevelWindow {
                 break;
         }
         
-        AffineTransform at = AffineTransform.getTranslateInstance(p.getX(), p.getY() - projectile.getHeight(null)/2);
-        at.rotate(p.getProjectileRotateAngle(), projectile.getWidth(null)/2, projectile.getHeight(null)/2);
+        AffineTransform at = AffineTransform.getTranslateInstance(p.getX() - projectile.getWidth(null)/2, p.getY() - projectile.getHeight(null)/2);
+        at.rotate(p.getProjectileAngle(), projectile.getWidth(null)/2, projectile.getHeight(null)/2);
         g2d.drawImage(projectile, at, null);
     }
 
@@ -617,7 +873,7 @@ public class LevelWindow {
         }
         
         
-        drawPlayerHP(500, 903, 400, 30, g2d);
+        drawPlayerHP(g2d, 500, 903, 400, 30);
     }
 
     public void drawHud(int hudX, int hudY, int hudSize, int hudPercent, Graphics2D g2d, Color tierColor) {
@@ -669,14 +925,28 @@ public class LevelWindow {
         }
     }
        
-    public void drawPlayerHP(int startX, int startY, int width, int heigth, Graphics g) {
-        g.setColor(Color.black);
-        g.fillRect(startX - 5, startY - 5, width + 10, heigth + 10);
-        g.setColor(Color.darkGray);
-        g.fillRect(startX, startY, width, heigth);
+    public void drawPlayerHP(Graphics2D g2d, int startX, int startY, int width, int heigth) {
+        g2d.setColor(Color.black);
+        g2d.fillRect(startX - 5, startY - 5, width + 10, heigth + 10);
+        g2d.setColor(Color.darkGray);
+        g2d.fillRect(startX, startY, width, heigth);
         int percent =  player.getHpPercent(); 
-        g.setColor(new Color((int) (2.55 * (100 - percent)), 255 - (int) (2.55 * (100 - percent)), 0));
-        g.fillRect(startX, startY, width * percent / 100, heigth);
+        g2d.setColor(new Color((int) (2.55 * (100 - percent)), 255 - (int) (2.55 * (100 - percent)), 0));
+        g2d.fillRect(startX, startY, width * percent / 100, heigth);
+        
+        int stringHeigth = (int) (heigth * 0.9);
+        startY += (heigth - stringHeigth) / 2;
+        String text = Integer.toString(player.getHP()) + "/" + Integer.toString(player.getMaxHP());
+        drawCenteredString(g2d, startX, startY, width, stringHeigth, Color.white, text);
+    }
+    
+    public void drawMiniHP(Graphics2D g2d, int startX, int startY, int width, int heigth, int percent) {
+        g2d.setColor(Color.black);
+        g2d.fillRect(startX - 1, startY - 1, width + 2, heigth + 2);
+        g2d.setColor(Color.darkGray);
+        g2d.fillRect(startX, startY, width, heigth);
+        g2d.setColor(new Color((int) (2.55 * (100 - percent)), 255 - (int) (2.55 * (100 - percent)), 0));
+        g2d.fillRect(startX, startY, width * percent / 100, heigth);
     }
     
     
@@ -1143,9 +1413,6 @@ public class LevelWindow {
     public void setTurret(Image turret) {
         this.turret = turret;
     }
-    public static Background getBg1(){
-        return bg1;
-    }
 
     public Image getWall() {
         return wall;
@@ -1162,37 +1429,39 @@ public class LevelWindow {
     public void setContainer(Image container) {
         this.container = container;
     }
-    
-    
-    public  void checkCollision(Rectangle rplayer, Rectangle rplayer1, Rectangle rplayer2, Rectangle rplayer3, Rectangle rTile, Tile t1){
-    	if (rplayer.intersects(rTile)){
-//            int jio = player.getCenterY();
-            player.setCenterX(t1.getTileX()+314);
-//            player.setCenterY(jio);
-//            player.setSpeedX(0);
-            System.out.println("kolizja");
-        }
-        if (rplayer1.intersects(rTile)){       
-//            int jio = player.getCenterX();     
-            player.setCenterY(t1.getTileY()+282);
-//            player.setCenterX(jio);
-//            player.setSpeedY(0);
-            System.out.println("kolizja1");
-        }
-        if (rplayer2.intersects(rTile)){
-//            int jio = player.getCenterY();
-            player.setCenterX(t1.getTileX()+64);
-//            player.setCenterY(jio);
-//            player.setSpeedX(0);
-            System.out.println("kolizja2");
-        }
-        if (rplayer3.intersects(rTile)){
-//            int jio = player.getCenterX();
-            player.setCenterY(t1.getTileY()-32);
-//            player.setCenterX(jio);
-//            player.setSpeedY(0);
-            System.out.println("kolizja3");
-        }
+
+    public void setSocket(Socket socket) {
+        this.socket = socket;
     }
+
+    public void setServerSocket(ServerSocket serverSocket) {
+        this.serverSocket = serverSocket;
+    }
+
+    public Socket getSocket() {
+        return socket;
+    }
+
+    public ServerSocket getServerSocket() {
+        return serverSocket;
+    }
+
+    public int getMoneyReward() {
+        return moneyReward;
+    }
+
+    public void setMoneyReward(int moneyReward) {
+        this.moneyReward = moneyReward;
+    }
+
+    public boolean isLevelCompleted() {
+        return levelCompleted;
+    }
+
+    public void setLevelCompleted(boolean levelCompleted) {
+        this.levelCompleted = levelCompleted;
+    }
+    
+    
     
 }

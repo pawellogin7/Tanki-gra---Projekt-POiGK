@@ -2,7 +2,6 @@
 package tanksgame;
 
 import java.awt.Image;
-import java.awt.Rectangle;
 
 
 public class Tile {
@@ -22,10 +21,9 @@ public class Tile {
     public void update(int BackgroundSpeedX, int BackgroundSpeedY) {
         speedX = BackgroundSpeedX;
         speedY = -1*BackgroundSpeedY;
-        
+
         tileX += speedX;
-        tileY += speedY;      
-        
+        tileY += speedY;
     }
 
     public int getTileX() {
@@ -59,5 +57,7 @@ public class Tile {
     public void setType(int type) {
         this.type = type;
     }
+    
+    
 
 }

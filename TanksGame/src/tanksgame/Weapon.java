@@ -50,6 +50,7 @@ public class Weapon {
      
         cooldown = reload;
         Projectile proj = new Projectile(startX, startY, angle, bullet_velocity, range, damage, armorPen, projectileType, team);
+        proj.setStatus(status);
         return proj;
     }
     
@@ -68,6 +69,7 @@ public class Weapon {
         
         cooldown = reload;
         Projectile proj = new Projectile(startX, startY, angle, bullet_velocity, range, damage, armorPen, projectileType, team);
+        proj.setStatus(status);
         return proj;
     }
     
