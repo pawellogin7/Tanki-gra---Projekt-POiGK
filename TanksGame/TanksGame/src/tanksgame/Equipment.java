@@ -273,19 +273,19 @@ public class Equipment {
           
         switch(primaryWeaponsTier[i]) {
             case 0:
-                addPrimaryWeapon(new Weapon(15, 0.1, 70, 5, 150, 20, 8), i, "Flamethrower", 0, 1000, 3);
+                addPrimaryWeapon(new Weapon(15, 0.15, 70, 5, 150, 18, 7), i, "Flamethrower", 0, 1000, 3);
                 break;
             case 1:
-                addPrimaryWeapon(new Weapon(15, 0.1, 70, 5, 150, 20, 8), i, "Flamethrower", 1, 1000, 3);
+                addPrimaryWeapon(new Weapon(15, 0.15, 70, 5, 150, 18, 7), i, "Flamethrower", 1, 1000, 3);
                 break;    
             case 2:
-                addPrimaryWeapon(new Weapon(20, 0.1, 60, 5, 175, 20, 10), i, "Flamethrower", 2, 1000, 3);
+                addPrimaryWeapon(new Weapon(20, 0.15, 65, 5, 175, 18, 8), i, "Flamethrower", 2, 1000, 3);
                 break;
             case 3:
-                addPrimaryWeapon(new Weapon(25, 0.1, 50, 5, 200, 20, 12), i, "Flamethrower", 3, 1000, 3);
+                addPrimaryWeapon(new Weapon(25, 0.15, 60, 5, 200, 18, 9), i, "Flamethrower", 3, 1000, 3);
                 break;
             case 4:
-                addPrimaryWeapon(new Weapon(30, 0.1, 45, 5, 225, 20, 14), i, "Flamethrower", 4, 1000, 3);
+                addPrimaryWeapon(new Weapon(30, 0.15, 55, 5, 225, 18, 11), i, "Flamethrower", 4, 1000, 3);
                 break;
         }
         i++;

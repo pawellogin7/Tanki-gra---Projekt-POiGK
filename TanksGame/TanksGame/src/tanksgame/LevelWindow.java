@@ -33,6 +33,7 @@ public class LevelWindow {
     private static Background bg1;
     private ArrayList<Tile> tileArray = new ArrayList<Tile>();
     private ArrayList<Enemy> enemyArray = new ArrayList<Enemy>();
+    int[][] map = new int[20][20];
     
     public static int score = 0;
     private Font font = new Font(null, Font.BOLD, 30);
@@ -154,13 +155,17 @@ public class LevelWindow {
                     char ch = line.charAt(i);
                     int type = Character.getNumericValue(ch);
                     if(type < 10) {
+                        if(type < 0)
+                            type = 0;
                         Tile t = new Tile(bg1.getBgX() + 250 * i, bg1.getBgY() + 250 * j, type);
                         tileArray.add(t);
+                        map[j][i] = type;
                     }
                     else {
                         type = 0;
                         Tile t = new Tile(bg1.getBgX() + 250 * i, bg1.getBgY() + 250 * j, type);
                         tileArray.add(t);
+                        map[j][i] = type;
                         
                         switch(ch) {
                             case 'E':
@@ -280,157 +285,6 @@ public class LevelWindow {
                 drawPauseMenu(g2d);
         }
             
-    }
-    
-    //--------Multiplayer methods-------------------
-    private void listenForServerRequest(Graphics2D g2d) {
-        Socket socket = null;
-        try {
-            socket = serverSocket.accept();
-            dos = new DataOutputStream(socket.getOutputStream());
-            dis = new DataInputStream(socket.getInputStream());
-            connected = true;
-        }
-        catch (IOException e) {
-            drawWaitingForPlayersScreen(g2d);
-        }
-    }
-    
-    private boolean connect() {
-        try {
-            socket = new Socket(ip, port);
-            dos = new DataOutputStream(socket.getOutputStream());
-            dis = new DataInputStream(socket.getInputStream());
-            connected = true;
-        }
-        catch(IOException e) {
-            return false;
-        }
-        return true;
-    }
-    
-    private void initializeServer() {
-        try {
-            serverSocket = new ServerSocket(port, 8, InetAddress.getByName(ip));
-        }
-        catch(IOException e) { 
-        }
-    }
-    
-    private void loadMultiplayerValues() {
-        try {
-            int t1X = dis.readInt();
-            enemyMulti.setCenterX(t1X + bg1.getBgX());
-            int t1Y = dis.readInt();
-            enemyMulti.setCenterY(t1Y + bg1.getBgY());
-            double bodyAngle = dis.readDouble();
-            enemyMulti.setBodyRotationAngle(bodyAngle);
-            double turretAngle = dis.readDouble();
-            enemyMulti.setTurretRotationAngle(turretAngle);
-            int maxProjectilesNumber = dis.readInt();
-            for(int i = 0; i < maxProjectilesNumber; i++) {
-                connectionError = false;
-                
-                //int startX = dis.readInt() + bg1.getBgX();
-                //int startY = dis.readInt() + bg1.getBgY();
-                int gunX = enemyMulti.getCenterX() + (int) Math.round(93.0 * Math.cos(enemyMulti.getTurretRotationAngle()) );
-                int gunY = enemyMulti.getCenterY() + (int) Math.round(93.0 * Math.sin(enemyMulti.getTurretRotationAngle()) );
-                int startX = gunX;
-                int startY = gunY;
-                double angle = dis.readDouble();
-                int velocity = dis.readInt();
-                int range = dis.readInt();
-                int damage = dis.readInt();
-                int armorPen = dis.readInt();
-                int projType = dis.readInt();
-                int team = 2;
-                
-                int speedX = dis.readInt();
-                int speedY = dis.readInt();
-                Projectile p = new Projectile(startX, startY, angle, velocity, range, damage, armorPen, projType, team);
-                p.setSpeedX(speedX);
-                p.setSpeedY(speedY);
-                enemyMulti.getProjectiles().add(p);
-            }
-        }
-        catch (IOException e) {
-            if(host) {
-                try {
-                    socket.close();
-                }
-                catch(IOException ex) {
-                }
-            }
-            else {
-                try {
-                    socket.close();
-                }
-                catch(IOException ex) {
-                }
-            }
-            buttonClicked = 1;
-            connectionError = true;
-        }
-    }
-    
-    private void sendMultiplayerValues() {
-        try {
-            connectionError = false;
-            
-            dos.writeInt(player.getPosX());
-            dos.writeInt(player.getPosY());
-            dos.writeDouble(player.getBodyRotationAngle());
-            dos.writeDouble(player.getTurretRotationAngle());
-            int numberOfProjectiles = 0; 
-            for(int i = 0; i < player.getProjectiles().size(); i++) {
-                Projectile p = (Projectile) player.getProjectiles().get(i);
-                if(p.isNewProjectile()) {
-                    numberOfProjectiles++;
-                    p.setNewProjectile(false);
-                }
-            }
-            dos.writeInt(numberOfProjectiles);
-            for(int i = 0; i < numberOfProjectiles; i++) {
-                Projectile p = (Projectile) player.getProjectiles().get(i);
-                //dos.writeInt(p.getX());
-                //dos.writeInt(p.getY());
-                dos.writeDouble(p.getProjectileAngle());
-                dos.writeInt(p.getVelocity());
-                dos.writeInt(p.getRange());
-                dos.writeInt(p.getDamage());
-                dos.writeInt(p.getArmorPen());
-                dos.writeInt(p.getProjectileType());
-                
-                dos.writeInt(p.getSpeedX());
-                dos.writeInt(p.getSpeedY());
-            }
-            dos.flush();
-        }
-        catch (IOException e) {
-            if(host) {
-                try {
-                    socket.close();
-                }
-                catch(IOException ex) {
-                }
-            }
-            else {
-                try {
-                    socket.close();
-                }
-                catch(IOException ex) {
-                }
-            }
-            buttonClicked = 1;
-            connectionError = true;
-        }
-    }
-    
-    private void drawWaitingForPlayersScreen(Graphics2D g2d) {
-        g2d.setColor(Color.white);
-        g2d.fillRect(0, 0, 1400, 1000);
-        
-        drawCenteredString(g2d, 0, 470, 1400, 24, Color.black, "Waiting for players...");
     }
     
     //------------Drawing level methods-----------------------
@@ -678,6 +532,9 @@ public class LevelWindow {
         
         for (int i = 0; i < projectiles.size(); i++) {
             Projectile p = (Projectile) projectiles.get(i);
+            if(getTileType(p.getX(), p.getY()) != 0)
+                p.setVisible(false);
+            
             if (p.isVisible() == true) {
 		p.update(bg1.getSpeedX(), bg1.getSpeedY());
                 int range = (int) (p.getRange() * 1.2);
@@ -812,6 +669,165 @@ public class LevelWindow {
         AffineTransform at = AffineTransform.getTranslateInstance(p.getX() - projectile.getWidth(null)/2, p.getY() - projectile.getHeight(null)/2);
         at.rotate(p.getProjectileAngle(), projectile.getWidth(null)/2, projectile.getHeight(null)/2);
         g2d.drawImage(projectile, at, null);
+    }
+    
+    private int getTileType(int posX, int posY) {
+        posX = (int) Math.floor((posX - bg1.getBgX()) / 250);
+        posY = (int) Math.floor((posY - bg1.getBgY()) / 250);
+        int value = map[posY][posX];
+        
+        return value;
+    }
+    
+    //--------Multiplayer methods-------------------
+    private void listenForServerRequest(Graphics2D g2d) {
+        Socket socket = null;
+        try {
+            socket = serverSocket.accept();
+            dos = new DataOutputStream(socket.getOutputStream());
+            dis = new DataInputStream(socket.getInputStream());
+            connected = true;
+        }
+        catch (IOException e) {
+            drawWaitingForPlayersScreen(g2d);
+        }
+    }
+    
+    private boolean connect() {
+        try {
+            socket = new Socket(ip, port);
+            dos = new DataOutputStream(socket.getOutputStream());
+            dis = new DataInputStream(socket.getInputStream());
+            connected = true;
+        }
+        catch(IOException e) {
+            return false;
+        }
+        return true;
+    }
+    
+    private void initializeServer() {
+        try {
+            serverSocket = new ServerSocket(port, 8, InetAddress.getByName(ip));
+        }
+        catch(IOException e) { 
+        }
+    }
+    
+    private void loadMultiplayerValues() {
+        try {
+            int t1X = dis.readInt();
+            enemyMulti.setCenterX(t1X + bg1.getBgX());
+            int t1Y = dis.readInt();
+            enemyMulti.setCenterY(t1Y + bg1.getBgY());
+            double bodyAngle = dis.readDouble();
+            enemyMulti.setBodyRotationAngle(bodyAngle);
+            double turretAngle = dis.readDouble();
+            enemyMulti.setTurretRotationAngle(turretAngle);
+            int maxProjectilesNumber = dis.readInt();
+            for(int i = 0; i < maxProjectilesNumber; i++) {
+                connectionError = false;
+                
+                //int startX = dis.readInt() + bg1.getBgX();
+                //int startY = dis.readInt() + bg1.getBgY();
+                int gunX = enemyMulti.getCenterX() + (int) Math.round(93.0 * Math.cos(enemyMulti.getTurretRotationAngle()) );
+                int gunY = enemyMulti.getCenterY() + (int) Math.round(93.0 * Math.sin(enemyMulti.getTurretRotationAngle()) );
+                int startX = gunX;
+                int startY = gunY;
+                double angle = dis.readDouble();
+                int velocity = dis.readInt();
+                int range = dis.readInt();
+                int damage = dis.readInt();
+                int armorPen = dis.readInt();
+                int projType = dis.readInt();
+                int team = 2;
+                
+                int speedX = dis.readInt();
+                int speedY = dis.readInt();
+                Projectile p = new Projectile(startX, startY, angle, velocity, range, damage, armorPen, projType, team);
+                p.setSpeedX(speedX);
+                p.setSpeedY(speedY);
+                enemyMulti.getProjectiles().add(p);
+            }
+        }
+        catch (IOException e) {
+            if(host) {
+                try {
+                    socket.close();
+                }
+                catch(IOException ex) {
+                }
+            }
+            else {
+                try {
+                    socket.close();
+                }
+                catch(IOException ex) {
+                }
+            }
+            buttonClicked = 1;
+            connectionError = true;
+        }
+    }
+    
+    private void sendMultiplayerValues() {
+        try {
+            connectionError = false;
+            
+            dos.writeInt(player.getPosX());
+            dos.writeInt(player.getPosY());
+            dos.writeDouble(player.getBodyRotationAngle());
+            dos.writeDouble(player.getTurretRotationAngle());
+            int numberOfProjectiles = 0; 
+            for(int i = 0; i < player.getProjectiles().size(); i++) {
+                Projectile p = (Projectile) player.getProjectiles().get(i);
+                if(p.isNewProjectile()) {
+                    numberOfProjectiles++;
+                    p.setNewProjectile(false);
+                }
+            }
+            dos.writeInt(numberOfProjectiles);
+            for(int i = 0; i < numberOfProjectiles; i++) {
+                Projectile p = (Projectile) player.getProjectiles().get(i);
+                //dos.writeInt(p.getX());
+                //dos.writeInt(p.getY());
+                dos.writeDouble(p.getProjectileAngle());
+                dos.writeInt(p.getVelocity());
+                dos.writeInt(p.getRange());
+                dos.writeInt(p.getDamage());
+                dos.writeInt(p.getArmorPen());
+                dos.writeInt(p.getProjectileType());
+                
+                dos.writeInt(p.getSpeedX());
+                dos.writeInt(p.getSpeedY());
+            }
+            dos.flush();
+        }
+        catch (IOException e) {
+            if(host) {
+                try {
+                    socket.close();
+                }
+                catch(IOException ex) {
+                }
+            }
+            else {
+                try {
+                    socket.close();
+                }
+                catch(IOException ex) {
+                }
+            }
+            buttonClicked = 1;
+            connectionError = true;
+        }
+    }
+    
+    private void drawWaitingForPlayersScreen(Graphics2D g2d) {
+        g2d.setColor(Color.white);
+        g2d.fillRect(0, 0, 1400, 1000);
+        
+        drawCenteredString(g2d, 0, 470, 1400, 24, Color.black, "Waiting for players...");
     }
 
     //Update and draw hud methods

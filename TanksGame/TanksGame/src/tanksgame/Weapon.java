@@ -44,7 +44,7 @@ public class Weapon {
         double angle = 0;
         
         if(znak)
-            angle = turretAngle + (1.0 *(100 - accuracy) / 100.0) * losuj * Math.PI;
+            angle = turretAngle + (1.0 * (100 - accuracy) / 100.0) * losuj * Math.PI;
         else
             angle = turretAngle - (1.0 * (100 - accuracy) / 100.0) * losuj * Math.PI;       
      

@@ -214,8 +214,8 @@ public class Enemy {
     }
     
     public boolean projectileInArea(Projectile p) {
-            int projectileX = p.getX() + 8;
-            int projectileY = p.getY() + 8;
+            int projectileX = p.getX();
+            int projectileY = p.getY();
             
             if(bodyRotationAngle == 0 || bodyRotationAngle == 180) {
                 if(projectileX > (centerX - 64) && projectileX < (centerX + 64)) {
