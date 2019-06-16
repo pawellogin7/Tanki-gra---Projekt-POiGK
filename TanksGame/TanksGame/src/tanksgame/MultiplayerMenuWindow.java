@@ -1,20 +1,33 @@
 package tanksgame;
 
+import java.applet.*;
+import java.awt.*;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import javax.swing.JFrame;
 
 
-public class MultiplayerMenuWindow {
+public class MultiplayerMenuWindow extends TanksGame{
     private int mouseX;
     private int mouseY;
     boolean mouseClicked, mouseLocked;
     private int buttonClicked;   
+    private String tekstOkna;
+    private String tekstOkna2;
+    private int intOkna;
+    private TextField okno1;    
+    private TextField okno2;
+    private int krotnosc = 0;
     
     MultiplayerMenuWindow() {
         mouseLocked = true;
+    }    
+    
+    public void init()
+    {
     }
     
     public void update(Graphics g, int mX, int mY, boolean mClick) {
@@ -35,7 +48,7 @@ public class MultiplayerMenuWindow {
     public void paint(Graphics g) {
         Graphics2D g2d = (Graphics2D) g.create();
         g2d.setColor(Color.white);
-        g2d.fillRect(0, 0, 1400, 1000);;
+        g2d.fillRect(0, 0, 1400, 1000);
         
         int buttonWidth = 300;
         int buttonHeight = 70;
@@ -44,8 +57,29 @@ public class MultiplayerMenuWindow {
         drawButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 5, Color.lightGray, "Host game", 1);
         
         buttonY += 200;
-        drawButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 5, Color.lightGray, "Join game", 2);
-
+        drawButton(g2d, buttonX, buttonY, buttonWidth, buttonHeight, 5, Color.lightGray, "Join game", 2); 
+                
+        
+        if (krotnosc == 0){             
+            JFrame f = new JFrame("Choose port and IP");
+            okno1 = new TextField();
+            okno1.setBounds(50, 50, 100, 30);
+            okno2 = new TextField();   
+            okno2.setBounds(50, 100, 200 ,30);
+            f.add(okno1);
+            f.add(okno2);
+            f.setSize(400,400);
+            f.setLayout(null);
+            f.setVisible(true);    
+            krotnosc++;            
+        }
+        if (krotnosc == 1){
+            tekstOkna = okno1.getText();
+            tekstOkna2 = okno2.getText();
+        }
+        
+        System.out.println(tekstOkna);
+        System.out.println(tekstOkna2);
     }       
 
 
@@ -61,7 +95,6 @@ public class MultiplayerMenuWindow {
                 mouseLocked = true;
             }
         }
-        
         g2d.setColor(buttonColor);
         g2d.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
         g2d.setColor(outlineColor);
