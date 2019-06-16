@@ -1,0 +1,27 @@
+! TanksGame
+! # = Tile Legend 
+! 1 = Wall
+! 2 = Container
+! P = Player (enemy Player if multiplayer and not host)
+! E = Enemy player int multiplayer (Player if multiplayer and not host)
+! a = Enemy
+11111111111111111111
+1      a           1
+1   22       a 2   1
+1   22   a   22a2 a1
+1 a         2a   221
+1       2222a      1
+1                  1
+1    a   a    a    1
+1     2  2  2      1
+1  a2         2a   1
+1        P         1
+1  a2         2a   1
+1     2  2  2      1
+1    a 2 a   a     1
+1   2   2          1
+1  2     22        1
+1 2        2    2221
+1     aa    2   a  1
+1     a    2     a 1
+11111111111111111111
